@@ -1,0 +1,285 @@
+<?php
+
+/**
+ * An image to run through imagecache
+ */
+
+namespace Onigoetz\Imagecache;
+
+/**
+ * An image to run through imagecache
+ *
+ * @package Imagecache
+ */
+class Image
+{
+    /**
+     * File source
+     * @var String
+     */
+    public $source;
+
+    /**
+     * Which toolkit to use to manage this image
+     * @var String
+     */
+    public $toolkit;
+
+    /**
+     * Informations about the image
+     * @var Array
+     */
+    public $info;
+
+    /**
+     * Resource used by GD
+     * @var resource
+     */
+    public $resource;
+
+    /**
+     * Create an image and get informations about it
+     *
+     * @param string      $source
+     * @param string $toolkit
+     */
+    public function __construct($source, $toolkit)
+    {
+        $this->source = $source;
+
+        $this->toolkit = $toolkit;
+
+        $failed = false;
+        if (!is_file($this->source) && !is_uploaded_file($this->source)) {
+            return $failed;
+        }
+
+        $this->get_info();
+
+        if (isset($this->info) && is_array($this->info)) {
+            if (!$this->invoke('load')) {
+                return $failed;
+            }
+        }
+    }
+
+    /**
+     * Invokes the given method using the currently selected toolkit.
+     *
+     * @param String $method A string containing the method to invoke.
+     * @param Array  $params An optional array of parameters to pass to the toolkit method.
+     *
+     * @return mixed Mixed values (typically Boolean indicating successful operation).
+     */
+    public function invoke($method, array $params = array())
+    {
+        $function = array('Onigoetz\Imagecache\\Imagekit\\' . ucfirst($this->toolkit), $method);
+        if (method_exists($function[0], $function[1])) {
+            array_unshift($params, $this);
+
+            return call_user_func_array($function, $params);
+        }
+
+        return false;
+    }
+
+    /**
+     * Get details about an image.
+     *
+     * We support GIF, JPG and PNG file formats when used with the GD
+     * toolkit, and may support others, depending on which toolkits are
+     * installed.
+     *
+     * @return bool|array false, if the file could not be found or is not an image. Otherwise, a keyed array containing information about the image:
+     *   - "width": Width, in pixels.
+     *   - "height": Height, in pixels.
+     *   - "extension": Commonly used file extension for the image.
+     *   - "mime_type": MIME type ('image/jpeg', 'image/gif', 'image/png').
+     *   - "file_size": File size in bytes.
+     */
+    public function get_info()
+    {
+        $details = $this->invoke('get_info');
+        if (isset($details) && is_array($details)) {
+            $details['file_size'] = filesize($this->source);
+        }
+
+        $this->info = $details;
+    }
+
+    /**
+     * Scales an image to the exact width and height given.
+     *
+     * This function achieves the target aspect ratio by cropping the original image
+     * equally on both sides, or equally on the top and bottom. This function is
+     * useful to create uniform sized avatars from larger images.
+     *
+     * The resulting image always has the exact target dimensions.
+     *
+     * @param Integer $width  The target width, in pixels.
+     * @param Integer $height The target height, in pixels.
+     *
+     * @return bool true or false, based on success.
+     *
+     * @see resize()
+     * @see crop()
+     */
+    public function scale_and_crop($width, $height)
+    {
+        $scale = max($width / $this->info['width'], $height / $this->info['height']);
+        $x = ($this->info['width'] * $scale - $width) / 2;
+        $y = ($this->info['height'] * $scale - $height) / 2;
+
+        if ($this->resize($this->info['width'] * $scale, $this->info['height'] * $scale)) {
+            return $this->crop($x, $y, $width, $height);
+        }
+
+        return false;
+    }
+
+    /**
+     * Scales an image to the given width and height while maintaining aspect ratio.
+     *
+     * The resulting image can be smaller for one or both target dimensions.
+     *
+     * @param Integer $width
+     *   The target width, in pixels. This value is omitted then the scaling will
+     *   based only on the height value.
+     * @param Integer $height
+     *   The target height, in pixels. This value is omitted then the scaling will
+     *   based only on the width value.
+     * @param Boolean $upscale
+     *   Boolean indicating that files smaller than the dimensions will be scaled
+     *   up. This generally results in a low quality image.
+     *
+     * @return bool true or false, based on success.
+     *
+     * @see scale_and_crop()
+     */
+    public function scale($width = null, $height = null, $upscale = false)
+    {
+        $aspect = $this->info['height'] / $this->info['width'];
+
+        if ($upscale) {
+            // Set width/height according to aspect ratio if either is empty.
+            $width = !empty($width) ? $width : $height / $aspect;
+            $height = !empty($height) ? $height : $width / $aspect;
+        } else {
+            // Set impossibly large values if the width and height aren't set.
+            $width = !empty($width) ? $width : 9999999;
+            $height = !empty($height) ? $height : 9999999;
+
+            // Don't scale up.
+            if (round($width) >= $this->info['width'] && round($height) >= $this->info['height']) {
+                return true;
+            }
+        }
+
+        if ($aspect < $height / $width) {
+            $height = $width * $aspect;
+        } else {
+            $width = $height / $aspect;
+        }
+
+        return $this->resize($width, $height);
+    }
+
+    /**
+     * Resize an image to the given dimensions (ignoring aspect ratio).
+     *
+     * @param Integer $width  The target width, in pixels.
+     * @param Integer $height The target height, in pixels.
+     *
+     * @return bool true or false, based on success.
+     *
+     * @see gd_resize()
+     */
+    public function resize($width, $height)
+    {
+        $width = (int) round($width);
+        $height = (int) round($height);
+
+        return $this->invoke('resize', array($width, $height));
+    }
+
+    /**
+     * Rotate an image by the given number of degrees.
+     *
+     * @param  int      $degrees    The number of (clockwise) degrees to rotate the image.
+     * @param  int|null $background
+     * @return bool     true or false, based on success.
+     */
+    public function rotate($degrees, $background = null)
+    {
+        return $this->invoke('rotate', array($degrees, $background));
+    }
+
+    /**
+     * Crop an image to the rectangle specified by the given rectangle.
+     *
+     * @param Integer $x
+     *   The top left coordinate, in pixels, of the crop area (x axis value).
+     * @param Integer $y
+     *   The top left coordinate, in pixels, of the crop area (y axis value).
+     * @param Integer $width
+     *   The target width, in pixels.
+     * @param Integer $height
+     *   The target height, in pixels.
+     *
+     * @return bool true or false, based on success.
+     *
+     * @see scale_and_crop()
+     * @see gd_crop()
+     */
+    public function crop($x, $y, $width, $height)
+    {
+        $aspect = $this->info['height'] / $this->info['width'];
+        if (empty($height)) {
+            $height = $width / $aspect;
+        }
+
+        if (empty($width)) {
+            $width = $height * $aspect;
+        }
+
+        $width = (int) round($width);
+        $height = (int) round($height);
+
+        return $this->invoke('crop', array($x, $y, $width, $height));
+    }
+
+    /**
+     * Convert an image to grayscale.
+     *
+     * @return bool true or false, based on success.
+     *
+     * @see gd_desaturate()
+     */
+    public function desaturate()
+    {
+        return $this->invoke('desaturate');
+    }
+
+    /**
+     * Close the image and save the changes to a file.
+     *
+     * @param  string|null $destination Destination path where the image should be saved. If it is empty the original image file will be overwritten.
+     * @return bool|Image  image or false, based on success.
+     */
+    public function save($destination = null)
+    {
+        if (empty($destination)) {
+            $destination = $this->source;
+        }
+        if ($this->invoke('save', array($destination))) {
+            // Clear the cached file size and refresh the image information.
+            clearstatcache();
+
+            if (common_chmod($destination)) {
+                return new Image($destination, $this->toolkit);
+            }
+        }
+
+        return false;
+    }
+}

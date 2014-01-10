@@ -1,0 +1,30 @@
+{
+    "name": "onigoetz/imagecache",
+    "description": "Image caching for everybody",
+    "keywords": ["laravel 4", "image", "automatic generation", "retina"],
+    "authors": [
+        {
+            "name": "Stéphane Goetz",
+            "email": "onigoetz@onigoetz.ch"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+	"require-dev": {
+		"illuminate/support": "4.*"
+	},
+	"suggest": {
+		"illuminate/support": "To use with Laravel"
+	},
+    "autoload": {
+        "classmap": [
+            "src/migrations"
+        ],
+        "psr-4": {
+            "Onigoetz\\Imagecache\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+	"prefer-stable": "true"
+}
