@@ -40,7 +40,7 @@ class Image
     /**
      * Create an image and get informations about it
      *
-     * @param string      $source
+     * @param string $source
      * @param string $toolkit
      */
     public function __construct($source, $toolkit)
@@ -67,7 +67,7 @@ class Image
      * Invokes the given method using the currently selected toolkit.
      *
      * @param String $method A string containing the method to invoke.
-     * @param Array  $params An optional array of parameters to pass to the toolkit method.
+     * @param Array $params An optional array of parameters to pass to the toolkit method.
      *
      * @return mixed Mixed values (typically Boolean indicating successful operation).
      */
@@ -116,7 +116,7 @@ class Image
      *
      * The resulting image always has the exact target dimensions.
      *
-     * @param Integer $width  The target width, in pixels.
+     * @param Integer $width The target width, in pixels.
      * @param Integer $height The target height, in pixels.
      *
      * @return bool true or false, based on success.
@@ -187,7 +187,7 @@ class Image
     /**
      * Resize an image to the given dimensions (ignoring aspect ratio).
      *
-     * @param Integer $width  The target width, in pixels.
+     * @param Integer $width The target width, in pixels.
      * @param Integer $height The target height, in pixels.
      *
      * @return bool true or false, based on success.
@@ -196,8 +196,8 @@ class Image
      */
     public function resize($width, $height)
     {
-        $width = (int) round($width);
-        $height = (int) round($height);
+        $width = (int)round($width);
+        $height = (int)round($height);
 
         return $this->invoke('resize', array($width, $height));
     }
@@ -205,7 +205,7 @@ class Image
     /**
      * Rotate an image by the given number of degrees.
      *
-     * @param  int      $degrees    The number of (clockwise) degrees to rotate the image.
+     * @param  int $degrees The number of (clockwise) degrees to rotate the image.
      * @param  int|null $background
      * @return bool     true or false, based on success.
      */
@@ -242,8 +242,8 @@ class Image
             $width = $height * $aspect;
         }
 
-        $width = (int) round($width);
-        $height = (int) round($height);
+        $width = (int)round($width);
+        $height = (int)round($height);
 
         return $this->invoke('crop', array($x, $y, $width, $height));
     }
@@ -275,7 +275,7 @@ class Image
             // Clear the cached file size and refresh the image information.
             clearstatcache();
 
-            if (common_chmod($destination)) {
+            if (chmod($destination, 0644)) {
                 return new Image($destination, $this->toolkit);
             }
         }

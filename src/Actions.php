@@ -147,7 +147,7 @@ class Actions
         }
 
         if ($data['random']) {
-            $degrees = abs((float) $data['degrees']);
+            $degrees = abs((float)$data['degrees']);
             $data['degrees'] = rand(-1 * $degrees, $degrees);
         }
 

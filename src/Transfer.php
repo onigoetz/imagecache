@@ -25,7 +25,7 @@ class Transfer
     public function transfer($path)
     {
         $size = getimagesize($path);
-        $headers = array('Content-Type: ' .$size['mime']);
+        $headers = array('Content-Type: ' . $size['mime']);
 
         if ($fileinfo = stat($path)) {
             $headers[] = 'Content-Length: ' . $fileinfo[7];
@@ -33,8 +33,6 @@ class Transfer
             $headers[] = 'Cache-Control: max-age=1209600, private, must-revalidate';
             $this->set_cache_headers($fileinfo, $headers);
         }
-
-        chmod($path, 0644);
 
         if (ob_get_level()) {
             ob_end_clean();
@@ -64,7 +62,7 @@ class Transfer
      * Most code has been taken from drupal_page_cache_header().
      *
      * @param array $fileinfo Array returned by stat().
-     * @param array $headers  Array of existing headers.
+     * @param array $headers Array of existing headers.
      */
     private function set_cache_headers($fileinfo, &$headers)
     {
@@ -74,12 +72,13 @@ class Transfer
 
         // See if the client has provided the required HTTP headers:
 
-        $if_modified_since = \Request::server('HTTP_IF_MODIFIED_SINCE', false);
-        $if_none_match = \Request::server('HTTP_IF_NONE_MATCH', false);
+        $if_modified_since = $this->server_value('HTTP_IF_MODIFIED_SINCE', false);
+        $if_none_match = $this->server_value('HTTP_IF_NONE_MATCH', false);
 
         if ($if_modified_since && $if_none_match
-                && $if_none_match == $etag // etag must match
-                && $if_modified_since == $last_modified) { // if-modified-since must match
+            && $if_none_match == $etag // etag must match
+            && $if_modified_since == $last_modified
+        ) { // if-modified-since must match
             header('HTTP/1.1 304 Not Modified');
             // All 304 responses must send an etag if the 200 response
             // for the same object contained an etag
@@ -93,5 +92,10 @@ class Transfer
         // Send appropriate response:
         $headers[] = 'Last-Modified: ' . $last_modified;
         $headers[] = 'ETag: ' . $etag;
+    }
+
+    protected function server_value($key, $default)
+    {
+        return array_key_exists($key, $_SERVER) ? $_SERVER[$key] : $default;
     }
 }
