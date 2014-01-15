@@ -11,23 +11,16 @@ use Symfony\Component\HttpFoundation\Response;
 class ImagecacheServiceProvider extends ServiceProvider
 {
     /**
-     * Bootstrap the application events.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        $this->package('onigoetz/imagecache');
-    }
-
-    /**
      * Register the service provider.
      *
      * @return void
      */
     public function register()
     {
-        $config = $this->app['config']->get('imagecache');
+        // Add the namespace to config
+        $this->app['config']->package('onigoetz/imagecache', __DIR__ . '/../../config');
+
+        $config = $this->app['config']->get('imagecache::imagecache');
 
         //TODO :: externalize that
         $toolkit = 'gd';
