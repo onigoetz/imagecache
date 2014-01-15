@@ -1,4 +1,4 @@
-# Installing imagecache with Slim Framework
+# Imagecache with Slim Framework
 
 ## Composer
 

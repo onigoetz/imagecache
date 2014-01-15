@@ -22,7 +22,7 @@ call the url `/images/cache/200x200/your_image.jpg` and on the web server it wil
     - apply the `200x200` presets to it
     - write it to disk at `/images/cache/200x200/your_image.jpg`
     - return it to the browser
-    
+
 You've probably guessed it, the URL is constructed as follows :
 
 `/<image folder>/<cache folder>/<preset name>/<file name>`
@@ -31,8 +31,7 @@ You've probably guessed it, the URL is constructed as follows :
 For it to work you need
 
 - PHP 5.3
-- Clean url's with apache url_rewrite or nginx rewrites
-- 
+- Clean urls with apache url_rewrite or nginx rewrites
 
 ## Installation
 
@@ -48,7 +47,7 @@ They're made of a a key with an array of "actions" to apply
 
 You can put any key you want as long as it works in a URL.
 
-However a recommendation is to put the size of the final image in the preset name, 
+However a recommendation is to put the size of the final image in the preset name,
 this allows for much more reusability in your presets. because if you create a rule named "thumbnails"
 and that your layout changes the sizes of your thumbnails but only in some places, you'll soon end in a mess with the preset names
 
@@ -62,9 +61,9 @@ __Preset structure__
 __Action structure__
 
 	array('action' => 'action_name', ... options ...)
-	
+
 [Complete list of actions and options](http://github.com/onigoetz/imagecache/tree/master/docs/actions.md)
-	
+
 ### Example
 
 	'presets' => array(
@@ -81,12 +80,22 @@ __Action structure__
 
 ## Retina Images
 
-to document
+This package also helps to generate image for retina displays. there are two ways for this.
+
+with plugins like [retina.js](http://retinajs.com/) the page will automatically try urls with __@2x__ at the end.
+
+so when a normal image's url is `/images/cache/200x200/koala.jpg` it will resolve to : `preset = 200x200` and `file = koala.jpg`.
+
+But if you call the url `/images/cache/200x200/koala@2x.jpg` it will resolve to : `preset = 200x200@2x` and `file = koala.jpg`.
+
+Now the interesting thing happens : if the preset exists, it is applied. If it doesn't, it will take the `200x200` preset and double all it's values.
+
+so if in the preset `200x200` you crop your images to 200x200 pixels, it will now be a 400x400 pixels image.
 
 ## Todo
 
-- do image manipulation with Imagine and allow for greater flexibility in used libraries
+- add some unit tests
+- do image manipulation with Imagine and allow for greater flexibility in manipulations
 - write documentation for other frameworks
-- test with laravel
-- test with slim framework
+
 

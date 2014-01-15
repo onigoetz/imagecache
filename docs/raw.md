@@ -1,4 +1,4 @@
-# Raw PHP
+# Imagecache with Raw PHP
 
 You can also use imagecahce without any framework, just pure PHP, here's how.
 
@@ -25,7 +25,7 @@ Create an array that follows the configuration from the model in [The default co
 
 Then we create the file `images.php`
 
-```
+```php
 <?php
 
 use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
