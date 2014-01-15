@@ -6,7 +6,7 @@ Add a dependency with this command : `composer require onigoetz/imagecache:dev-m
 
 ## Creating a configuration
 
-Create an array that follows the configuration from the model in [](https://github.com/onigoetz/imagecache/blob/master/src/config/imagecache.php)
+Create an array that follows the configuration from the model in [The default configuration](https://github.com/onigoetz/imagecache/blob/master/src/config/imagecache.php)
 
 After you created an application and prepared your configuration, add this one-liner in your configuration
 
