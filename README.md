@@ -1,5 +1,5 @@
 # Imagecache
-[![Build Status](https://travis-ci.org/onigoetz/imagecache.png?branch=master)](http://travis-ci.org/onigoetz/imagecache)
+[![Build Status](https://travis-ci.org/onigoetz/imagecache.png?branch=master)](http://travis-ci.org/onigoetz/imagecache) [![Coverage Status](https://coveralls.io/repos/onigoetz/imagecache/badge.png?branch=master)](https://coveralls.io/r/onigoetz/imagecache?branch=master)
 
 Automatically generate images at the size you need them with presets
 

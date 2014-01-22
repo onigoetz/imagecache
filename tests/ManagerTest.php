@@ -75,4 +75,27 @@ class ManagerTest extends \PHPUnit_Framework_TestCase {
 			$this->setAccessible('percent')->invoke($manager, $percent, $current_value)
 		);
 	}
+	
+	function providerKeywords() {
+		return array(
+			array(0, 'top', 1235, 1000),
+			array(0, 'left', 222, 1000),
+			array(100, 'right', 800, 700), //start 100px from left to keep the right 700px
+			array(150, 'bottom', 950, 800),
+			array(100, 'center', 800, 600), //down from 800 to 600px, will crop 100px on each side
+			array(200, 200, 753, 400) //direct return if not string
+		);
+	}
+	
+	/**
+     * @dataProvider providerKeywords
+     */
+	function testKeywords($result, $value, $current_pixels, $new_pixels) {
+		$manager = new Manager(array(), $this->getMockedToolkit());
+
+		$this->assertEquals(
+			$result,
+			$this->setAccessible('keywords')->invoke($manager, $value, $current_pixels, $new_pixels)
+		);
+	}
 }
