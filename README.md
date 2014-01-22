@@ -1,4 +1,5 @@
 # Imagecache
+[![Build Status](https://travis-ci.org/onigoetz/imagecache.png?branch=master)](http://travis-ci.org/onigoetz/imagecache)
 
 Automatically generate images at the size you need them with presets
 
