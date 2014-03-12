@@ -70,10 +70,11 @@ class Image
             throw new \LogicException("Method '$method' doesn't exist");
         }
 
-        $reflected = (new ReflectionMethod(__CLASS__, $method))->getParameters();
+        $reflected = new ReflectionMethod(__CLASS__, $method);
+        $parameters = $reflected->getParameters();
 
         $arguments = array();
-        foreach ($reflected as $param) {
+        foreach ($parameters as $param) {
             if (array_key_exists($param->name, $args)) {
                 $arguments[$param->name] = $args[$param->name];
             } else {
