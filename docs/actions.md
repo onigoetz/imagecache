@@ -8,8 +8,8 @@ Resize an image to the given dimensions (ignoring aspect ratio).
 
 __Options__
 
-- `width` : The target width, in pixels.
-- `height` : The target height, in pixels.
+- `width` : The target width, in pixels or percents.
+- `height` : The target height, in pixels or percents.
 
 ### `scale`
 
@@ -19,10 +19,9 @@ The resulting image can be smaller for one or both target dimensions.
 
 __Options__
 
-- `width` : The target width, in pixels. This value is omitted then the scaling will based only on the height value.
-- `height` : The target height, in pixels. This value is omitted then the scaling will based only on the width value.
-- `upscale` : Boolean indicating that files smaller than the dimensions will be scaled
-up. This generally results in a low quality image. (Defaults to `false`)
+- `width` : The target width, in pixels or percents. This value is omitted then the scaling will based only on the height value.
+- `height` : The target height, in pixels or percents. This value is omitted then the scaling will based only on the width value.
+- `upscale` : Boolean indicating that files smaller than the dimensions will be scaled up. This generally results in a low quality image. (Defaults to `false`)
 
 ### `scale_and_crop`
 
@@ -36,8 +35,8 @@ The resulting image always has the exact target dimensions.
 
 __Options__
 
-- `width` : The target width, in pixels.
-- `height` : The target height, in pixels.
+- `width` : The target width, in pixels or percents.
+- `height` : The target height, in pixels or percents.
 
 
 ### `crop`
@@ -46,10 +45,10 @@ Crop an image to the rectangle specified by the given rectangle.
 
 __Options__
 
-- `width` : The target width, in pixels.
-- `height` : The target height, in pixels.
-- `xoffset` : The top left coordinate, in pixels, of the crop area (x axis value).
-- `yoffset` : The top left coordinate, in pixels, of the crop area (y axis value).
+- `width` : The target width, in pixels or percents.
+- `height` : The target height, in pixels or percents.
+- `xoffset` : The top left coordinate, in pixels or keyword (top, left, bottom, right, center) of the crop area (x axis value), 
+- `yoffset` : The top left coordinate, in pixels or keyword (top, left, bottom, right, center) of the crop area (y axis value).
 
 
 ### `desaturate`

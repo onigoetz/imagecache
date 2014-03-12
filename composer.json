@@ -13,9 +13,10 @@
     },
 	"require-dev": {
 		"illuminate/support": "4.*",
-		"phpunit/phpunit": "3.*",
+		"phpunit/phpunit": "4.*",
 		"satooshi/php-coveralls": "*",
-		"mockery/mockery": "*"
+		"mockery/mockery": "*",
+		"mikey179/vfsStream": "*"
 	},
 	"suggest": {
 		"illuminate/support": "To use with Laravel"

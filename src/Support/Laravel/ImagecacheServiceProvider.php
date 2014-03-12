@@ -41,7 +41,7 @@ class ImagecacheServiceProvider extends ServiceProvider
             $url,
             function ($preset, $file) use ($app) {
                 try {
-                    $final_file = $app['imagecache']->handle_request($preset, $file);
+                    $final_file = $app['imagecache']->handleRequest($preset, $file);
                 } catch (InvalidPresetException $e) {
                     return \Response::make('Invalid preset', 404);
                 } catch (NotFoundException $e) {

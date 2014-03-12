@@ -1,101 +1,377 @@
 <?php
-	
+
 use Onigoetz\Imagecache\Manager;
-	
-class ManagerTest extends \PHPUnit_Framework_TestCase {
-	
-	function getMockedToolkit() {
-		return 'gd';
-	}
-	
-	function setAccessible($methodName) {
-		$method = new ReflectionMethod('Onigoetz\Imagecache\Manager', $methodName);
-		$method->setAccessible(true);
- 
-		return $method;
-	}
-	
-	function testClassExists() {
-		$this->assertTrue(class_exists('Onigoetz\Imagecache\Manager'));
-	}
-	
-	function testURL() {
-		$options = array('path_images' => 'img', 'path_cache' => 'cache');
-		$manager = new Manager($options, $this->getMockedToolkit());
-		
-		$preset = 'preset';
-		$file = 'file.jpg';
-		
-		$this->assertEquals("{$options['path_images']}/{$options['path_cache']}/$preset/$file", $manager->url($preset, $file));
-	}
-	
-	function testImageURL() {
-		$options = array('path_images' => 'img');
-		$manager = new Manager($options, $this->getMockedToolkit());
-		
-		$file = 'file.jpg';
-		
-		$final = $this->setAccessible('image_url')->invoke($manager, $file);
-		$this->assertEquals("{$options['path_images']}/$file", $final);
-	}
-	
-	/*/*
+use Onigoetz\Imagecache\Image;
+use Mockery as m;
+use org\bovigo\vfs\vfsStream;
+
+class ManagerTest extends ImagecacheTestCase
+{
+
+    function setAccessible($methodName)
+    {
+        $method = new ReflectionMethod('Onigoetz\Imagecache\Manager', $methodName);
+        $method->setAccessible(true);
+
+        return $method;
+    }
+
+    function testClassExists()
+    {
+        $this->assertTrue(class_exists('Onigoetz\Imagecache\Manager'));
+    }
+
+    /**
      * @expectedException \Onigoetz\Imagecache\Exceptions\InvalidPresetException
      */
-	/*function testNonExistingPreset() {
-		$preset_content = array('scale_and_crop' => array('width' => 200));
-		$options = array('presets' => array('200X' => $preset_content));
-		$manager = new Manager($options, $this->getMockedToolkit());
-		
-		$preset = '200X';
-		$file = 'file.jpg';
-		
-		$preset_result = $this->setAccessible('get_preset_actions')->invoke($manager, $preset, $file);
-		
-		$this->assertEquals($preset_content, $preset_result);
-	}*/
-	
-	function providerPercent() {
-		return array(
-			array(500, "50%", 1000),
-			array(330, "33%", 1000),
-			array(200, "20%", 1000),
-			array(500, 500, 1000) //directly return if it's not in percent
-		);
-	}
-	
-	/**
-     * @dataProvider providerPercent
-     */
-	function testPercent($result, $percent, $current_value) {
-		$manager = new Manager(array(), $this->getMockedToolkit());
+    function testNonExistingPreset()
+    {
+        $manager = $this->getManager(array('presets' => array()));
 
-		$this->assertEquals(
-			$result,
-			$this->setAccessible('percent')->invoke($manager, $percent, $current_value)
-		);
-	}
-	
-	function providerKeywords() {
-		return array(
-			array(0, 'top', 1235, 1000),
-			array(0, 'left', 222, 1000),
-			array(100, 'right', 800, 700), //start 100px from left to keep the right 700px
-			array(150, 'bottom', 950, 800),
-			array(100, 'center', 800, 600), //down from 800 to 600px, will crop 100px on each side
-			array(200, 200, 753, 400) //direct return if not string
-		);
-	}
-	
-	/**
-     * @dataProvider providerKeywords
-     */
-	function testKeywords($result, $value, $current_pixels, $new_pixels) {
-		$manager = new Manager(array(), $this->getMockedToolkit());
+        $this->setAccessible('getPresetActions')->invoke($manager, '200X', 'file.jpg');
+    }
 
-		$this->assertEquals(
-			$result,
-			$this->setAccessible('keywords')->invoke($manager, $value, $current_pixels, $new_pixels)
-		);
-	}
+    function testGetPreset()
+    {
+        $preset = array(array('action' => 'scale_and_crop', 'width' => 40, 'height' => 40));
+
+        $manager = $this->getManager(array('presets' => array('200X' => $preset)));
+
+        list($resolved_presets) = $this->setAccessible('getPresetActions')->invoke($manager, '200X', 'file.jpg');
+
+        $this->assertEquals($preset, $resolved_presets);
+    }
+
+    function testGetRetinaPreset()
+    {
+        $original_preset = array(array('action' => 'scale_and_crop', 'width' => 40, 'height' => 40));
+        $original_preset_key = '200X';
+        $original_file = 'file@2x.jpg';
+
+        $manager = $this->getManager(array('presets' => array('200X@2x' => $original_preset, '200X' => array())));
+
+        list($resolved_preset, $resolved_key, $resolved_file) = $this->setAccessible('getPresetActions')->invoke(
+            $manager,
+            $original_preset_key,
+            $original_file
+        );
+
+        $this->assertEquals($original_preset, $resolved_preset);
+        $this->assertEquals('200X@2x', $resolved_key);
+        $this->assertEquals('file.jpg', $resolved_file);
+    }
+
+    function providerRetinaGenerator()
+    {
+        return array(
+            array(
+                array('action' => 'scale_and_crop', 'width' => 40, 'height' => 40),
+                array('action' => 'scale_and_crop', 'width' => 80, 'height' => 80)
+            ),
+            array(
+                array('action' => 'scale', 'width' => 40),
+                array('action' => 'scale', 'width' => 80)
+            ),
+            array(
+                array('action' => 'scale', 'width' => 40),
+                array('action' => 'scale', 'width' => 80)
+            ),
+            array(
+                array('action' => 'scale', 'width' => '50%'),
+                array('action' => 'scale', 'width' => '50%')
+            ),
+            array(
+                array('action' => 'crop', 'width' => '50%', 'yoffset' => 20),
+                array('action' => 'crop', 'width' => '50%', 'yoffset' => 40)
+            ),
+            array(
+                array('action' => 'crop', 'width' => '20', 'yoffset' => 'top'),
+                array('action' => 'crop', 'width' => '40', 'yoffset' => 'top')
+            ),
+            array(
+                array('action' => 'crop', 'width' => '50%', 'xoffset' => 20),
+                array('action' => 'crop', 'width' => '50%', 'xoffset' => 40)
+            ),
+            array(
+                array('action' => 'crop', 'width' => '20', 'xoffset' => 'left'),
+                array('action' => 'crop', 'width' => '40', 'xoffset' => 'left')
+            ),
+        );
+    }
+
+    /**
+     * @dataProvider providerRetinaGenerator
+     */
+    function testGenerateRetinaAction($original, $generated)
+    {
+        $manager = $this->getManager();
+
+        $this->assertEquals($generated, $this->setAccessible('generateRetinaAction')->invoke($manager, $original));
+    }
+
+    function testGenerateRetinaPreset()
+    {
+        $original_preset = array(array('action' => 'scale', 'width' => 40), array('action' => 'scale', 'width' => 60));
+        $generated_preset = array(
+            array('action' => 'scale', 'width' => 80),
+            array('action' => 'scale', 'width' => 120)
+        );
+        $original_preset_key = '200X';
+        $original_file = 'file@2x.jpg';
+
+        $manager = $this->getManager(array('presets' => array('200X' => $original_preset)));
+
+        list($resolved_preset, $resolved_key, $resolved_file) = $this->setAccessible('getPresetActions')->invoke(
+            $manager,
+            $original_preset_key,
+            $original_file
+        );
+
+        $this->assertEquals($generated_preset, $resolved_preset);
+        $this->assertEquals('200X@2x', $resolved_key);
+        $this->assertEquals('file.jpg', $resolved_file);
+    }
+
+    function testLoadImage()
+    {
+        $manager = $this->getManager();
+
+        $this->assertInstanceOf(
+            'Onigoetz\Imagecache\Image',
+            $this->setAccessible('loadImage')->invoke($manager, 'vfs://root/images/' . $this->getDummyImageName())
+        );
+    }
+
+    /**
+     * @expectedException \Onigoetz\Imagecache\Exceptions\NotFoundException
+     * @covers Onigoetz\Imagecache\Manager::handleRequest
+     */
+    function testNonExistingFile()
+    {
+        $manager = $this->getManager(array('presets' => array('200X' => array())));
+
+        $manager->handleRequest('200X', 'file.jpg');
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::handleRequest
+     */
+    function testAlreadyExists()
+    {
+        $preset = '200X';
+        $file = $this->getDummyImageName();
+        $final_file = 'vfs://root/images/cache/' . $preset . '/' . $file;
+        $dir = dirname($final_file);
+
+        $manager = $this->getMockedManager(array('presets' => array($preset => array())));
+
+        //Create file
+        mkdir($dir, 0755, true);
+        touch($final_file);
+
+        $manager->shouldReceive('buildImage')->andReturn(false);
+
+        $this->assertEquals($final_file, $manager->handleRequest($preset, $file));
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::handleRequest
+     */
+    function testHandleRequestCreateDirectory()
+    {
+        $preset = '200X';
+        $file = $this->getDummyImageName();
+
+        $manager = $this->getMockedManager(array('presets' => array($preset => array())));
+
+        $this->assertNull($this->vfsRoot->getChild('images')->getChild('cache'));
+
+        $manager->shouldReceive('buildImage')->andReturn(true);
+
+        $manager->handleRequest($preset, $file);
+
+        $this->assertEquals(
+            0755,
+            $this->vfsRoot->getChild('images')->getChild('cache')->getChild($preset)->getPermissions()
+        );
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::handleRequest
+     */
+    function testHandleRequestCannotLoadImage()
+    {
+        $preset = '200X';
+
+        $manager = $this->getMockedManager(array('presets' => array($preset => array())));
+        $manager->shouldReceive('loadImage')->andReturn(false);
+
+        $this->assertFalse($manager->handleRequest($preset, $this->getDummyImageName()));
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::handleRequest
+     */
+    function testHandleRequest()
+    {
+        $file = $this->getDummyImageName();
+        $preset = '200X';
+        $expected = array(
+            'original_file' => 'vfs://root/images/' . $file,
+            'preset' => array(),
+            'final_file' => 'vfs://root/images/cache/' . $preset . '/' . $file,
+        );
+        $expected['image'] = new Image($expected['original_file'], $this->getMockedToolkit());
+
+        $manager = $this->getMockedManager(array('presets' => array($preset => $expected['preset'])));
+
+        $manager->shouldReceive('loadImage')->with($expected['original_file'])->andReturn($expected['image']);
+        $manager->shouldReceive('buildImage')->with($expected['preset'], $expected['image'], $expected['final_file'])
+            ->andReturn(true);
+
+        $manager->handleRequest($preset, $file);
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::handleRequest
+     */
+    function testHandleFailedRequest()
+    {
+        $file = $this->getDummyImageName();
+        $preset = '200X';
+
+        $manager = $this->getMockedManager(array('presets' => array($preset => array())));
+
+        $manager->shouldReceive('buildImage')->andReturn(false);
+
+        $manager->handleRequest($preset, $file);
+    }
+
+    function providerBuildImage()
+    {
+        //the example image is 500x500
+
+        return array(
+            array(
+                array('action' => 'scale_and_crop', 'width' => 40, 'height' => '25%'),
+                array('action' => 'scale_and_crop', 'width' => 40, 'height' => 125),
+            ),
+            array(
+                array('action' => 'scale', 'width' => 40),
+                array('action' => 'scale', 'width' => 40)
+            ),
+            array(
+                array('action' => 'scale', 'width' => '50%'),
+                array('action' => 'scale', 'width' => 250)
+            ),
+            array(
+                array('action' => 'crop', 'height' => '50%', 'yoffset' => 20),
+                array('action' => 'crop', 'height' => 250, 'yoffset' => 20)
+            ),
+            array(
+                array('action' => 'crop', 'height' => 20, 'yoffset' => 'bottom'),
+                array('action' => 'crop', 'height' => 20, 'yoffset' => 480)
+            ),
+            array(
+                array('action' => 'crop', 'width' => '50%', 'xoffset' => 'center'),
+                array('action' => 'crop', 'width' => '250', 'xoffset' => 125)
+            ),
+            array(
+                array('action' => 'crop', 'width' => '20', 'xoffset' => 'left'),
+                array('action' => 'crop', 'width' => '20', 'xoffset' => 0)
+            ),
+        );
+    }
+
+    /**
+     * @dataProvider providerBuildImage
+     * @covers       Onigoetz\Imagecache\Manager::buildImage
+     */
+    function testBuildImageCalculation($entry, $calculated)
+    {
+        $manager = $this->getManager();
+        $file = $this->getDummyImageName();
+        $original_file = vfsStream::url('root/images') . '/' . $file;
+        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $preset = array($entry);
+
+        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
+        $image->shouldReceive('call')->with($entry['action'], $calculated)->andReturn(true);
+        $image->shouldReceive('save')->andReturn(true);
+
+        $this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::buildImage
+     */
+    function testBuildImageMultiple()
+    {
+        $manager = $this->getManager();
+        $file = $this->getDummyImageName();
+        $original_file = vfsStream::url('root/images') . '/' . $file;
+        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $preset = array(
+            array('action' => 'scale', 'width' => 200, 'height' => '200'),
+            array('action' => 'crop', 'width' => 120, 'offsetx' => 'left', 'offsety' => 'top')
+        );
+
+        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
+        $image->shouldReceive('call')->with($preset[0]['action'], $preset[0])->andReturn(true);
+        $image->shouldReceive('call')->with($preset[1]['action'], $preset[1])->andReturn(true);
+        $image->shouldReceive('save')->andReturn(true);
+
+        $this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::buildImage
+     */
+    function testBuildImageCannotSave()
+    {
+        $manager = $this->getManager();
+        $file = $this->getDummyImageName();
+        $original_file = vfsStream::url('root/images') . '/' . $file;
+        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $preset = array(array('action' => 'scale', 'width' => 200, 'height' => '200'));
+
+        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
+        $image->shouldReceive('save')->andReturn(false);
+
+        $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::buildImage
+     */
+    function testBuildImageManipulationFailed()
+    {
+        $manager = $this->getManager();
+        $file = $this->getDummyImageName();
+        $original_file = vfsStream::url('root/images') . '/' . $file;
+        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $preset = array(array('action' => 'scale', 'width' => 200, 'height' => '200'));
+
+        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
+        $image->shouldReceive('call')->andReturn(false);
+
+        $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+    }
+
+    /**
+     * @covers Onigoetz\Imagecache\Manager::buildImage
+     */
+    function testBuildImageSaveFailed()
+    {
+        $manager = $this->getManager();
+        $file = $this->getDummyImageName();
+        $original_file = vfsStream::url('root/images') . '/' . $file;
+        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $preset = array(array('action' => 'scale', 'width' => 200, 'height' => '200'));
+
+        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
+        $image->shouldReceive('save')->andReturn(false);
+
+        $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+    }
 }

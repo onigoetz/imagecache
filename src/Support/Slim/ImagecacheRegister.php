@@ -25,7 +25,7 @@ class ImagecacheRegister
             $url,
             function ($preset, $file) use ($app) {
                 try {
-                    $final_file = $app->imagecache->handle_request($preset, $file);
+                    $final_file = $app->imagecache->handleRequest($preset, $file);
                 } catch (InvalidPresetException $e) {
                     header('HTTP/1.0 404 Not Found');
                     echo $e->message();
@@ -41,7 +41,7 @@ class ImagecacheRegister
                     echo 'dunno ...';
                     exit;
                 }
-				
+
                 $transfer = new Transfer();
                 $transfer->transfer($final_file);
                 exit;

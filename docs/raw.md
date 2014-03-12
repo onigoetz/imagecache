@@ -43,7 +43,7 @@ $toolkit = 'gd';
 $imagecache = new Manager($config, $toolkit);
 
 try {
-    $final_file = $imagecache->handle_request($_GET['preset'], $_GET['file']);
+    $final_file = $imagecache->handleRequest($_GET['preset'], $_GET['file']);
 } catch (InvalidPresetException $e) {
     header('HTTP/1.0 404 Not Found');
     echo $e->message();

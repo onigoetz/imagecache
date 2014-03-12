@@ -83,7 +83,7 @@ class Transfer
             // All 304 responses must send an etag if the 200 response
             // for the same object contained an etag
             header('Etag: ' . $etag);
-            // We must also set Last-Modified again, so that we overwrite Drupal's
+            // We must also set Last-Modified again, so that we overwrite the
             // default Last-Modified header with the right one
             header('Last-Modified: ' . $last_modified);
             exit;

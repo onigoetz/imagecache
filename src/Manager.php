@@ -29,7 +29,7 @@ class Manager
 
     public function __construct($options, $toolkit)
     {
-        $this->options = $options;
+        $this->options = $options + array('path_images' => 'images', 'path_cache' => 'cache');
         $this->toolkit = $toolkit;
     }
 
@@ -38,12 +38,12 @@ class Manager
         return "{$this->options['path_images']}/{$this->options['path_cache']}/$preset/$file";
     }
 
-    protected function image_url($file)
+    public function imageUrl($file)
     {
         return "{$this->options['path_images']}/$file";
     }
 
-    protected function get_preset_actions(&$preset_key, &$file)
+    protected function getPresetActions($preset_key, $file)
     {
         //Is it a valid preset
         if (!array_key_exists($preset_key, $this->options['presets'])) {
@@ -61,25 +61,31 @@ class Manager
                 $preset = $this->options['presets'][$preset_key];
             } else {
                 foreach ($preset as &$action) {
-                    if (array_key_exists('width', $action)) {
-                        $action['width'] = $action['width'] * 2;
-                    }
-                    if (array_key_exists('height', $action)) {
-                        $action['height'] = $action['height'] * 2;
-                    }
+                    $action = $this->generateRetinaAction($action);
                 }
             }
         }
 
-        return $preset;
+        return array($preset, $preset_key, $file);
     }
 
-    public function handle_request($preset_key, $file)
+    protected function generateRetinaAction($action)
+    {
+        foreach (array('width', 'height', 'xoffset', 'yoffset') as $option) {
+            if (array_key_exists($option, $action) && is_numeric($action[$option])) {
+                $action[$option] *= 2;
+            }
+        }
+
+        return $action;
+    }
+
+    public function handleRequest($preset_key, $file)
     {
         //do it at the beginning for early validation
-        $preset = $this->get_preset_actions($preset_key, $file);
+        list($preset, $preset_key, $file) = $this->getPresetActions($preset_key, $file);
 
-        $original_file = $this->options['path_images_root'] . '/' . $this->image_url($file);
+        $original_file = $this->options['path_images_root'] . '/' . $this->imageUrl($file);
         if (!is_file($original_file)) {
             throw new Exceptions\NotFoundException('File not found');
         }
@@ -102,49 +108,60 @@ class Manager
 
         $final_file = $this->options['path_images_root'] . '/' . $final_file;
 
-        if (file_exists($final_file) || $this->build_image($preset, $original_file, $final_file)) {
+        if (file_exists($final_file)) {
+            return $final_file;
+        }
+
+        if (!$image = $this->loadImage($original_file)) {
+            return false;
+        }
+
+        if ($this->buildImage($preset, $image, $final_file)) {
             return $final_file;
         }
 
         return false;
     }
 
+    protected function loadImage($src)
+    {
+        return new Image($src, $this->toolkit);
+    }
+
     /**
      * Create a new image based on an image preset.
      *
      * @param  array $actions An image preset array.
-     * @param  string $src Path of the source file.
+     * @param  Image $image Path of the source file.
      * @param  string $dst Path of the destination file.
      * @return bool   true if an image derivative is generated, false if no image derivative is generated. NULL if the derivative is being generated.
      */
-    protected function build_image($actions, $src, $dst)
+    protected function buildImage($actions, Image $image, $dst)
     {
-        if (!$image = new Image($src, $this->toolkit)) {
-            return false;
-        }
+        $info = $image->getInfo();
 
         foreach ($actions as $action) {
             // Make sure the width and height are computed first so they can be used
             // in relative x/yoffsets like 'center' or 'bottom'.
             if (isset($action['width'])) {
-                $action['width'] = $this->percent($action['width'], $image->info['width']);
+                $action['width'] = $this->percent($action['width'], $info['width']);
             }
+
             if (isset($action['height'])) {
-                $action['height'] = $this->percent($action['height'], $image->info['height']);
+                $action['height'] = $this->percent($action['height'], $info['height']);
             }
 
             if (isset($action['xoffset'])) {
-                $action['xoffset'] = $this->keywords($action['xoffset'], $image->info['width'], $action['width']);
+                $action['xoffset'] = $this->keywords($action['xoffset'], $info['width'], $action['width']);
             }
+
             if (isset($action['yoffset'])) {
-                $action['yoffset'] = $this->keywords($action['yoffset'], $image->info['height'], $action['height']);
+                $action['yoffset'] = $this->keywords($action['yoffset'], $info['height'], $action['height']);
             }
 
-            if (!method_exists('\\Onigoetz\\Imagecache\\Actions', $action['action'])) {
-                return false;
-            }
+            $method = $action['action'];
 
-            if (!Actions::$action['action']($image, $action)) {
+            if (!$image->call($method, $action)) {
                 return false;
             }
         }
@@ -163,7 +180,7 @@ class Manager
      * @param  int $current_pixels
      * @return mixed
      */
-    protected function percent($value, $current_pixels)
+    public function percent($value, $current_pixels)
     {
         if (strpos($value, '%') !== false) {
             $value = str_replace('%', '', $value) * 0.01 * $current_pixels;
@@ -180,7 +197,7 @@ class Manager
      * @param $new_pixels
      * @return float|int
      */
-    protected function keywords($value, $current_pixels, $new_pixels)
+    public function keywords($value, $current_pixels, $new_pixels)
     {
         switch ($value) {
             case 'top':

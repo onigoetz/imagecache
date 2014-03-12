@@ -6,6 +6,8 @@
 
 namespace Onigoetz\Imagecache;
 
+use ReflectionMethod;
+
 /**
  * An image to run through imagecache
  *
@@ -46,7 +48,6 @@ class Image
     public function __construct($source, $toolkit)
     {
         $this->source = $source;
-
         $this->toolkit = $toolkit;
 
         $failed = false;
@@ -54,13 +55,33 @@ class Image
             return $failed;
         }
 
-        $this->get_info();
+        $this->getInfo();
 
         if (isset($this->info) && is_array($this->info)) {
             if (!$this->invoke('load')) {
                 return $failed;
             }
         }
+    }
+
+    public function call($method, $args)
+    {
+        if (!method_exists($this, $method)) {
+            throw new \LogicException("Method '$method' doesn't exist");
+        }
+
+        $reflected = (new ReflectionMethod(__CLASS__, $method))->getParameters();
+
+        $arguments = array();
+        foreach ($reflected as $param) {
+            if (array_key_exists($param->name, $args)) {
+                $arguments[$param->name] = $args[$param->name];
+            } else {
+                $arguments[$param->name] = ($param->isOptional()) ? $param->getDefaultValue() : null;
+            }
+        }
+
+        return call_user_func_array(array($this, $method), $arguments);
     }
 
     /**
@@ -71,7 +92,7 @@ class Image
      *
      * @return mixed Mixed values (typically Boolean indicating successful operation).
      */
-    public function invoke($method, array $params = array())
+    protected function invoke($method, array $params = array())
     {
         $function = array('Onigoetz\Imagecache\\Imagekit\\' . ucfirst($this->toolkit), $method);
         if (method_exists($function[0], $function[1])) {
@@ -97,14 +118,18 @@ class Image
      *   - "mime_type": MIME type ('image/jpeg', 'image/gif', 'image/png').
      *   - "file_size": File size in bytes.
      */
-    public function get_info()
+    public function getInfo()
     {
+        if ($this->info != null) {
+            return $this->info;
+        }
+
         $details = $this->invoke('get_info');
         if (isset($details) && is_array($details)) {
             $details['file_size'] = filesize($this->source);
         }
 
-        $this->info = $details;
+        return $this->info = $details;
     }
 
     /**
@@ -196,8 +221,8 @@ class Image
      */
     public function resize($width, $height)
     {
-        $width = (int)round($width);
-        $height = (int)round($height);
+        $width = (int) round($width);
+        $height = (int) round($height);
 
         return $this->invoke('resize', array($width, $height));
     }
@@ -206,20 +231,31 @@ class Image
      * Rotate an image by the given number of degrees.
      *
      * @param  int $degrees The number of (clockwise) degrees to rotate the image.
-     * @param  int|null $background
+     * @param  string|null $background hexadecimal background color
+     * @param  bool $random
      * @return bool     true or false, based on success.
      */
-    public function rotate($degrees, $background = null)
+    public function rotate($degrees, $background = null, $random = false)
     {
+        // Set sane default values.
+        if (strlen(trim($background))) {
+            $background = hexdec(str_replace('#', '', $background));
+        }
+
+        if ($random) {
+            $deg = abs((float) $degrees);
+            $degrees = rand(-1 * $deg, $deg);
+        }
+
         return $this->invoke('rotate', array($degrees, $background));
     }
 
     /**
      * Crop an image to the rectangle specified by the given rectangle.
      *
-     * @param Integer $x
+     * @param Integer $xoffset
      *   The top left coordinate, in pixels, of the crop area (x axis value).
-     * @param Integer $y
+     * @param Integer $yoffset
      *   The top left coordinate, in pixels, of the crop area (y axis value).
      * @param Integer $width
      *   The target width, in pixels.
@@ -231,7 +267,7 @@ class Image
      * @see scale_and_crop()
      * @see gd_crop()
      */
-    public function crop($x, $y, $width, $height)
+    public function crop($xoffset, $yoffset, $width, $height)
     {
         $aspect = $this->info['height'] / $this->info['width'];
         if (empty($height)) {
@@ -242,10 +278,10 @@ class Image
             $width = $height * $aspect;
         }
 
-        $width = (int)round($width);
-        $height = (int)round($height);
+        $width = (int) round($width);
+        $height = (int) round($height);
 
-        return $this->invoke('crop', array($x, $y, $width, $height));
+        return $this->invoke('crop', array($xoffset, $yoffset, $width, $height));
     }
 
     /**
@@ -271,6 +307,7 @@ class Image
         if (empty($destination)) {
             $destination = $this->source;
         }
+
         if ($this->invoke('save', array($destination))) {
             // Clear the cached file size and refresh the image information.
             clearstatcache();
