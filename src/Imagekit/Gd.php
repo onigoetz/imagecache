@@ -27,15 +27,13 @@ class Gd
     {
         $res = self::create_tmp($image, $width, $height);
 
-        if (!imagecopyresampled($res, $image->resource, 0, 0, 0, 0, $width, $height, $image->info['width'], $image->info['height'])) {
+        if (!imagecopyresampled($res, $image->resource, 0, 0, 0, 0, $width, $height, $image->getWidth(), $image->getHeight())) {
             return false;
         }
 
         imagedestroy($image->resource);
         // Update image object.
         $image->resource = $res;
-        $image->info['width'] = $width;
-        $image->info['height'] = $height;
 
         return true;
     }
@@ -52,7 +50,7 @@ class Gd
     {
         // PHP installations using non-bundled GD do not have imagerotate.
         if (!function_exists('imagerotate')) {
-            \Log::error("The image $image->source could not be rotated because the imagerotate() function is not available in this PHP installation.");
+            throw new \Exception("The image $image->source could not be rotated because the imagerotate() function is not available in this PHP installation.");
 
             return false;
         }
@@ -78,7 +76,7 @@ class Gd
 
         // Images are assigned a new color palette when rotating, removing any
         // transparency flags. For GIF images, keep a record of the transparent color.
-        if ($image->info['extension'] == 'gif') {
+        if ($image->getExtension() == 'gif') {
             $transparent_index = imagecolortransparent($image->resource);
             if ($transparent_index != 0) {
                 $transparent_gif_color = imagecolorsforindex($image->resource, $transparent_index);
@@ -92,9 +90,6 @@ class Gd
             $background = imagecolorexactalpha($image->resource, $transparent_gif_color['red'], $transparent_gif_color['green'], $transparent_gif_color['blue'], $transparent_gif_color['alpha']);
             imagecolortransparent($image->resource, $background);
         }
-
-        $image->info['width'] = imagesx($image->resource);
-        $image->info['height'] = imagesy($image->resource);
 
         return true;
     }
@@ -120,8 +115,6 @@ class Gd
         // Destroy the original image and return the modified image.
         imagedestroy($image->resource);
         $image->resource = $res;
-        $image->info['width'] = $width;
-        $image->info['height'] = $height;
 
         return true;
     }
@@ -138,9 +131,7 @@ class Gd
     {
         // PHP installations using non-bundled GD do not have imagefilter.
         if (!function_exists('imagefilter')) {
-            \Log::error("The image $image->source could not be desaturated because the imagefilter() function is not available in this PHP installation.");
-
-            return false;
+            throw new \Exception("The image $image->source could not be desaturated because the imagefilter() function is not available in this PHP installation.");
         }
 
         return imagefilter($image->resource, IMG_FILTER_GRAYSCALE);
@@ -154,7 +145,7 @@ class Gd
      */
     public static function load(Image $image)
     {
-        $extension = str_replace('jpg', 'jpeg', $image->info['extension']);
+        $extension = str_replace('jpg', 'jpeg', $image->getExtension());
         $function = 'imagecreatefrom' . $extension;
 
         return (function_exists($function) && $image->resource = $function($image->source));
@@ -171,7 +162,7 @@ class Gd
      */
     public static function save(Image $image, $destination)
     {
-        $extension = str_replace('jpg', 'jpeg', $image->info['extension']);
+        $extension = str_replace('jpg', 'jpeg', $image->getExtension());
         $function = 'image' . $extension;
 
         if (!function_exists($function)) {
@@ -203,7 +194,7 @@ class Gd
     {
         $res = imagecreatetruecolor($width, $height);
 
-        if ($image->info['extension'] == 'gif') {
+        if ($image->getExtension() == 'gif') {
             // Grab transparent color index from image resource.
             $transparent = imagecolortransparent($image->resource);
 
@@ -216,7 +207,7 @@ class Gd
                 imagefill($res, 0, 0, $transparent);
                 imagecolortransparent($res, $transparent);
             }
-        } elseif ($image->info['extension'] == 'png') {
+        } elseif ($image->getExtension() == 'png') {
             imagealphablending($res, false);
             $transparency = imagecolorallocatealpha($res, 0, 0, 0, 127);
             imagefill($res, 0, 0, $transparency);

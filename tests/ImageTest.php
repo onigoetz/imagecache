@@ -157,12 +157,12 @@ class ImageTest extends ImagecacheTestCase
     {
         $image = $this->getImage();
 
-        $original_size = filesize($image->source);
+        $original_size = $image->getFileSize();
 
         $image->scale_and_crop(300, 300);
         $image->save();
 
-        $this->assertFalse(filesize($image->source) == $original_size);
+        $this->assertFalse($image->getFileSize() == $original_size);
     }
 }
 

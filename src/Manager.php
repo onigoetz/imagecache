@@ -138,25 +138,23 @@ class Manager
      */
     protected function buildImage($actions, Image $image, $dst)
     {
-        $info = $image->getInfo();
-
         foreach ($actions as $action) {
             // Make sure the width and height are computed first so they can be used
             // in relative x/yoffsets like 'center' or 'bottom'.
             if (isset($action['width'])) {
-                $action['width'] = $this->percent($action['width'], $info['width']);
+                $action['width'] = $this->percent($action['width'], $image->getWidth());
             }
 
             if (isset($action['height'])) {
-                $action['height'] = $this->percent($action['height'], $info['height']);
+                $action['height'] = $this->percent($action['height'], $image->getHeight());
             }
 
             if (isset($action['xoffset'])) {
-                $action['xoffset'] = $this->keywords($action['xoffset'], $info['width'], $action['width']);
+                $action['xoffset'] = $this->keywords($action['xoffset'], $image->getWidth(), $action['width']);
             }
 
             if (isset($action['yoffset'])) {
-                $action['yoffset'] = $this->keywords($action['yoffset'], $info['height'], $action['height']);
+                $action['yoffset'] = $this->keywords($action['yoffset'], $image->getHeight(), $action['height']);
             }
 
             $method = $action['action'];

@@ -31,7 +31,7 @@ class Image
      * Informations about the image
      * @var Array
      */
-    public $info;
+    protected $info;
 
     /**
      * Resource used by GD
@@ -50,17 +50,12 @@ class Image
         $this->source = $source;
         $this->toolkit = $toolkit;
 
-        $failed = false;
         if (!is_file($this->source) && !is_uploaded_file($this->source)) {
             throw new Exceptions\NotFoundException('file not found');
         }
 
-        $this->getInfo();
-
-        if (isset($this->info) && is_array($this->info)) {
-            if (!$this->invoke('load')) {
-                return \Exception('Cannot load file');
-            }
+        if (!$this->invoke('load')) {
+            throw new \Exception('Cannot load file');
         }
     }
 
@@ -99,10 +94,53 @@ class Image
         if (method_exists($function[0], $function[1])) {
             array_unshift($params, $this);
 
-            return call_user_func_array($function, $params);
+            $result = call_user_func_array($function, $params);
+            $this->info = null;
+            return $result;
         }
 
         return false;
+    }
+
+    public function getWidth(){
+        if ($this->info == null) {
+            $this->getInfo();
+        }
+
+        return $this->info['width'];
+    }
+
+    public function getHeight(){
+        if ($this->info == null) {
+            $this->getInfo();
+        }
+
+        return $this->info['height'];
+    }
+
+    /**
+     * @todo Can be cleaner
+     *
+     * @return mixed
+     */
+    public function getExtension(){
+        if ($this->info == null) {
+            $this->getInfo();
+        }
+
+        return $this->info['extension'];
+    }
+
+    public function getMimeType() {
+        if ($this->info == null) {
+            $this->getInfo();
+        }
+
+        return $this->info['mime_type'];
+    }
+
+    public function getFileSize() {
+        return ($this->info != null)? $this->info['file_size'] : filesize($this->source);
     }
 
     /**
@@ -160,11 +198,11 @@ class Image
             throw new \LogicException('"height" must not be null for "scale_and_crop"');
         }
 
-        $scale = max($width / $this->info['width'], $height / $this->info['height']);
-        $x = ($this->info['width'] * $scale - $width) / 2;
-        $y = ($this->info['height'] * $scale - $height) / 2;
+        $scale = max($width / $this->getWidth(), $height / $this->getHeight());
+        $x = ($this->getWidth() * $scale - $width) / 2;
+        $y = ($this->getHeight() * $scale - $height) / 2;
 
-        if ($this->resize($this->info['width'] * $scale, $this->info['height'] * $scale)) {
+        if ($this->resize($this->getWidth() * $scale, $this->getHeight() * $scale)) {
             return $this->crop($x, $y, $width, $height);
         }
 
@@ -192,7 +230,7 @@ class Image
      */
     public function scale($width = null, $height = null, $upscale = false)
     {
-        $aspect = $this->info['height'] / $this->info['width'];
+        $aspect = $this->getHeight() / $this->getWidth();
 
         if ($upscale) {
             // Set width/height according to aspect ratio if either is empty.
@@ -204,7 +242,7 @@ class Image
             $height = !empty($height) ? $height : 9999999;
 
             // Don't scale up.
-            if (round($width) >= $this->info['width'] && round($height) >= $this->info['height']) {
+            if (round($width) >= $this->getWidth() && round($height) >= $this->getHeight()) {
                 return true;
             }
         }
@@ -293,8 +331,6 @@ class Image
         if ($height === null) {
             throw new \LogicException('"height" must not be null for "crop"');
         }
-
-        $aspect = $this->info['height'] / $this->info['width'];
 
         $width = (int)round($width);
         $height = (int)round($height);
