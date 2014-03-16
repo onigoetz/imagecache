@@ -1,8 +1,8 @@
 <?php
 
-use Onigoetz\Imagecache\Manager;
-use Onigoetz\Imagecache\Image;
 use Mockery as m;
+use Onigoetz\Imagecache\Image;
+use Onigoetz\Imagecache\Manager;
 use org\bovigo\vfs\vfsStream;
 
 class ManagerTest extends ImagecacheTestCase
@@ -167,7 +167,8 @@ class ManagerTest extends ImagecacheTestCase
 
         //Create file
         mkdir($dir, 0755, true);
-        file_put_contents($final_file, 'content'); //TODO :: use touch when we drop the support for PHP 5.3, limitation of vfsStream
+        //TODO :: use touch when we drop the support for PHP 5.3, limitation of vfsStream
+        file_put_contents($final_file, 'content');
 
         $manager->shouldReceive('buildImage')->andReturn(false);
 
@@ -213,7 +214,7 @@ class ManagerTest extends ImagecacheTestCase
 
         //TODO :: remove when we drop support for PHP 5.3
         if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            mkdir('vfs://root/images/cache/' . $preset , 0755, true);
+            mkdir('vfs://root/images/cache/' . $preset, 0755, true);
         }
 
         $this->assertFalse($manager->handleRequest($preset, $this->getDummyImageName()));
@@ -241,7 +242,7 @@ class ManagerTest extends ImagecacheTestCase
 
         //TODO :: remove when we drop support for PHP 5.3
         if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            mkdir('vfs://root/images/cache/' . $preset , 0755, true);
+            mkdir('vfs://root/images/cache/' . $preset, 0755, true);
         }
 
         $manager->handleRequest($preset, $file);
@@ -261,7 +262,7 @@ class ManagerTest extends ImagecacheTestCase
 
         //TODO :: remove when we drop support for PHP 5.3
         if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            mkdir('vfs://root/images/cache/' . $preset , 0755, true);
+            mkdir('vfs://root/images/cache/' . $preset, 0755, true);
         }
 
         $manager->handleRequest($preset, $file);

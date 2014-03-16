@@ -52,14 +52,14 @@ class Image
 
         $failed = false;
         if (!is_file($this->source) && !is_uploaded_file($this->source)) {
-            return $failed;
+            throw new Exceptions\NotFoundException('file not found');
         }
 
         $this->getInfo();
 
         if (isset($this->info) && is_array($this->info)) {
             if (!$this->invoke('load')) {
-                return $failed;
+                return \Exception('Cannot load file');
             }
         }
     }
@@ -152,6 +152,14 @@ class Image
      */
     public function scale_and_crop($width, $height)
     {
+        if ($width === null) {
+            throw new \LogicException('"width" must not be null for "scale_and_crop"');
+        }
+
+        if ($height === null) {
+            throw new \LogicException('"height" must not be null for "scale_and_crop"');
+        }
+
         $scale = max($width / $this->info['width'], $height / $this->info['height']);
         $x = ($this->info['width'] * $scale - $width) / 2;
         $y = ($this->info['height'] * $scale - $height) / 2;
@@ -222,8 +230,8 @@ class Image
      */
     public function resize($width, $height)
     {
-        $width = (int) round($width);
-        $height = (int) round($height);
+        $width = (int)round($width);
+        $height = (int)round($height);
 
         return $this->invoke('resize', array($width, $height));
     }
@@ -244,7 +252,7 @@ class Image
         }
 
         if ($random) {
-            $deg = abs((float) $degrees);
+            $deg = abs((float)$degrees);
             $degrees = rand(-1 * $deg, $deg);
         }
 
@@ -270,17 +278,26 @@ class Image
      */
     public function crop($xoffset, $yoffset, $width, $height)
     {
+        if ($xoffset === null) {
+            throw new \LogicException('"xoffset" must not be null for "crop"');
+        }
+
+        if ($yoffset === null) {
+            throw new \LogicException('"yoffset" must not be null for "crop"');
+        }
+
+        if ($width === null) {
+            throw new \LogicException('"width" must not be null for "crop"');
+        }
+
+        if ($height === null) {
+            throw new \LogicException('"height" must not be null for "crop"');
+        }
+
         $aspect = $this->info['height'] / $this->info['width'];
-        if (empty($height)) {
-            $height = $width / $aspect;
-        }
 
-        if (empty($width)) {
-            $width = $height * $aspect;
-        }
-
-        $width = (int) round($width);
-        $height = (int) round($height);
+        $width = (int)round($width);
+        $height = (int)round($height);
 
         return $this->invoke('crop', array($xoffset, $yoffset, $width, $height));
     }
