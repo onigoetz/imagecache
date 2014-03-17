@@ -167,8 +167,7 @@ class ManagerTest extends ImagecacheTestCase
 
         //Create file
         mkdir($dir, 0755, true);
-        //TODO :: use touch when we drop the support for PHP 5.3, limitation of vfsStream
-        file_put_contents($final_file, 'content');
+        touch($final_file);
 
         $manager->shouldReceive('buildImage')->andReturn(false);
 
@@ -180,11 +179,6 @@ class ManagerTest extends ImagecacheTestCase
      */
     function testHandleRequestCreateDirectory()
     {
-        // Testing if we are dealing with version 5.4.0 or higher
-        if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            $this->markTestSkipped('Invalid PHP version, unable to run test.');
-        }
-
         $preset = '200X';
         $file = $this->getDummyImageName();
 
@@ -212,11 +206,6 @@ class ManagerTest extends ImagecacheTestCase
         $manager = $this->getMockedManager(array('presets' => array($preset => array())));
         $manager->shouldReceive('loadImage')->andReturn(false);
 
-        //TODO :: remove when we drop support for PHP 5.3
-        if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            mkdir('vfs://root/images/cache/' . $preset, 0755, true);
-        }
-
         $this->assertFalse($manager->handleRequest($preset, $this->getDummyImageName()));
     }
 
@@ -240,11 +229,6 @@ class ManagerTest extends ImagecacheTestCase
         $manager->shouldReceive('buildImage')->with($expected['preset'], $expected['image'], $expected['final_file'])
             ->andReturn(true);
 
-        //TODO :: remove when we drop support for PHP 5.3
-        if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            mkdir('vfs://root/images/cache/' . $preset, 0755, true);
-        }
-
         $manager->handleRequest($preset, $file);
     }
 
@@ -259,11 +243,6 @@ class ManagerTest extends ImagecacheTestCase
         $manager = $this->getMockedManager(array('presets' => array($preset => array())));
 
         $manager->shouldReceive('buildImage')->andReturn(false);
-
-        //TODO :: remove when we drop support for PHP 5.3
-        if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            mkdir('vfs://root/images/cache/' . $preset, 0755, true);
-        }
 
         $manager->handleRequest($preset, $file);
     }

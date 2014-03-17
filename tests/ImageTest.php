@@ -24,7 +24,7 @@ class ImageTest extends ImagecacheTestCase
 
     function getMockedImage()
     {
-        $image = m::mock($this->getImage());
+        return m::mock($this->getImage());
     }
 
     /**
