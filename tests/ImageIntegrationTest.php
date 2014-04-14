@@ -33,7 +33,7 @@ class ImageIntegrationTest extends ImagecacheTestCase
                 array(
                     array('action' => 'scale', 'width' => 40),
                 ),
-                'scale-40-?.png'
+                'scale-40-__.png'
             ),
             array(
                 array(
@@ -51,7 +51,7 @@ class ImageIntegrationTest extends ImagecacheTestCase
                 array(
                     array('action' => 'scale', 'height' => 60),
                 ),
-                'scale-?-60.png'
+                'scale-__-60.png'
             ),
             array(
                 array(
