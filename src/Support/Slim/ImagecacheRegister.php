@@ -19,7 +19,7 @@ class ImagecacheRegister
             }
         );
 
-        $url = "/{$config['path_images']}/{$config['path_cache']}/:preset/:file";
+        $url = "/{$config['images_url']}/:preset/:file";
 
         $app->get(
             $url,
@@ -28,11 +28,11 @@ class ImagecacheRegister
                     $final_file = $app->imagecache->handleRequest($preset, $file);
                 } catch (InvalidPresetException $e) {
                     header('HTTP/1.0 404 Not Found');
-                    echo $e->message();
+                    echo $e->getMessage();
                     exit;
                 } catch (NotFoundException $e) {
                     header('HTTP/1.0 404 Not Found');
-                    echo $e->message();
+                    echo $e->getMessage();
                     exit;
                 }
 

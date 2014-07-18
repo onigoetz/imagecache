@@ -13,20 +13,42 @@ You create a preset named `200x200` and configure it to scale images to 200x200 
 
 At this point, you're ready to use the module
 
-call the url `/images/cache/200x200/your_image.jpg` and on the web server it will:
+call the url `/imagecache/200x200/your_image.jpg` and on the web server it will:
 
-- check for the existence of `/images/cache/200x200/your_image.jpg`
+- check for the existence of `/imagecache/200x200/your_image.jpg`
   - if it exists:
     - return it
   - if not:
     - take the image `/images/your_image.jpg`
     - apply the `200x200` presets to it
-    - write it to disk at `/images/cache/200x200/your_image.jpg`
+    - write it to disk at `/imagecache/200x200/your_image.jpg`
     - return it to the browser
 
 You've probably guessed it, the URL is constructed as follows :
 
-`/<image folder>/<cache folder>/<preset name>/<file name>`
+`/<cache folder>/<preset name>/<file name>`
+
+## Demo
+
+```config
+    'images_url' => 'imagecache', // imagecache/:preset/:file
+    'path_images_root' => ROOT. '/storage/uploads',
+    'cache_path' => ROOT. '/storage/cache',
+    'presets' => array(
+        '200x200' => array( //exact size
+            array('action' => 'scale_and_crop', 'width' => 200, 'height' => 200)
+        ),
+        'x85' => array( //fixed height
+            array('action' => 'scale', 'width' => 85)
+        ),
+    )
+```
+
+  - url: http://localhost/app/imagecache/200x200/2014/test.jpg
+  - cache patch:  /User/asins/storage/cache
+  - origin patch: /User/asins/storage/uploads
+
+set cache folder chmod 755.
 
 ## Prerequisites
 For it to work you need
