@@ -11,7 +11,7 @@ return array(
 	| If you put `images` it means your images are accessible at : `/images/your_image.jpg` (relative to your framework install)
     |
     */
-    'path_images' => 'images',
+    'path_images' => 'imagecache',
 
     /*
     |--------------------------------------------------------------------------
@@ -34,11 +34,10 @@ return array(
     |
     | This folder MUST be located inside the `path_images` folder
 	|
-	| so if you put `images` in `path_images` and `cache` in `path_cache`
-	| your image would be stored at `/images/cache/<preset>/<image.jpg>`
+	| your image would be stored at `/var/www/root/cache`
     |
     */
-    'path_cache' => 'cache',
+    'cache_path' => app('path.cache'),
 
     /*
     |--------------------------------------------------------------------------

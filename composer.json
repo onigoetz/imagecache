@@ -1,7 +1,7 @@
 {
-    "name": "onigoetz/imagecache",
+    "name": "asins/imagecache",
     "description": "Image caching for everybody",
-    "keywords": ["laravel 4", "image", "automatic generation", "retina"],
+    "keywords": ["slim", "laravel 4", "image", "automatic generation", "retina"],
     "authors": [
         {
             "name": "Stéphane Goetz",

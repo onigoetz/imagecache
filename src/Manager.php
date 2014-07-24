@@ -29,18 +29,18 @@ class Manager
 
     public function __construct($options, $toolkit)
     {
-        $this->options = $options + array('path_images' => 'images', 'path_cache' => 'cache');
+        $this->options = $options; // + array('path_images' => 'images', 'path_cache' => 'cache');
         $this->toolkit = $toolkit;
     }
 
-    public function url($preset, $file)
+    public function imgCatchPath($preset, $file)
     {
-        return "{$this->options['path_images']}/{$this->options['path_cache']}/$preset/$file";
+        return "{$this->options['cache_path']}/$preset/$file";
     }
 
-    public function imageUrl($file)
+    public function imgOriginPath($file)
     {
-        return "{$this->options['path_images']}/$file";
+        return "{$this->options['path_images_root']}/$file";
     }
 
     protected function getPresetActions($preset_key, $file)
@@ -85,28 +85,26 @@ class Manager
         //do it at the beginning for early validation
         list($preset, $preset_key, $file) = $this->getPresetActions($preset_key, $file);
 
-        $original_file = $this->options['path_images_root'] . '/' . $this->imageUrl($file);
+        $original_file = $this->imgOriginPath($file);
         if (!is_file($original_file)) {
             throw new Exceptions\NotFoundException('File not found');
         }
 
-        $final_file = $this->url($preset_key, $file);
+        $final_file = $this->imgCatchPath($preset_key, $file);
 
         //create the folder path (and chmod it)
         $directory = dirname($final_file);
         if (!is_dir($directory)) {
             $folder_path = explode('/', $directory);
-            $image_path = $this->options['path_images_root'];
+            $image_path = '';
             foreach ($folder_path as $element) {
-                $image_path .= '/' . $element;
+                $image_path .= "/$element";
                 if (!is_dir($image_path)) {
-                    mkdir($image_path, 0755, true);
-                    chmod($image_path, 0755);
+                    mkdir($image_path, '0755', true);
+                    chmod($image_path, '0755');
                 }
             }
         }
-
-        $final_file = $this->options['path_images_root'] . '/' . $final_file;
 
         if (file_exists($final_file)) {
             return $final_file;
