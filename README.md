@@ -1,9 +1,13 @@
 # Imagecache
-[![Build Status](https://travis-ci.org/onigoetz/imagecache.png?branch=master)](http://travis-ci.org/onigoetz/imagecache) [![Coverage Status](https://coveralls.io/repos/onigoetz/imagecache/badge.png?branch=master)](https://coveralls.io/r/onigoetz/imagecache?branch=master)
+[![Build Status](http://img.shields.io/travis/onigoetz/imagecache.svg?style=flat)](https://travis-ci.org/onigoetz/imagecache)
+[![Latest Stable Version](http://img.shields.io/packagist/v/onigoetz/imagecache.svg?style=flat)](https://packagist.org/packages/onigoetz/imagecache)
+[![Total Downloads](http://img.shields.io/packagist/dt/onigoetz/imagecache.svg?style=flat)](https://packagist.org/packages/onigoetz/imagecache)
+[![Scrutinizer Quality Score](http://img.shields.io/scrutinizer/g/onigoetz/imagecache.svg?style=flat)](https://scrutinizer-ci.com/g/onigoetz/imagecache/)
+[![Code Coverage](http://img.shields.io/scrutinizer/coverage/g/onigoetz/imagecache.svg?style=flat)](https://scrutinizer-ci.com/g/onigoetz/imagecache/)
 
 Automatically generate images at the size you need them with presets
 
-__works with any framework__
+__Works with any framework__
 
 ## How it works
 
