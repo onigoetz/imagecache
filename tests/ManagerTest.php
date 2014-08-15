@@ -3,6 +3,7 @@
 use Mockery as m;
 use Onigoetz\Imagecache\Image;
 use Onigoetz\Imagecache\Manager;
+use Onigoetz\Imagecache\MethodCaller;
 use org\bovigo\vfs\vfsStream;
 
 class ManagerTest extends ImagecacheTestCase
@@ -19,6 +20,23 @@ class ManagerTest extends ImagecacheTestCase
     function testClassExists()
     {
         $this->assertTrue(class_exists('Onigoetz\Imagecache\Manager'));
+    }
+
+    function testGetMethodCaller()
+    {
+        $manager = $this->getManager();
+
+        $this->assertInstanceOf('\Onigoetz\Imagecache\MethodCaller', $manager->getMethodCaller());
+    }
+
+    function testSetMethodCaller()
+    {
+        $manager = $this->getManager();
+
+        $manager->setMethodCaller($methodCaller = new MethodCaller);
+
+        $this->assertInstanceOf('\Onigoetz\Imagecache\MethodCaller', $manager->getMethodCaller());
+        $this->assertSame($methodCaller, $manager->getMethodCaller());
     }
 
     /**
@@ -296,8 +314,10 @@ class ManagerTest extends ImagecacheTestCase
         $preset = array($entry);
 
         $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
-        $image->shouldReceive('call')->with($entry['action'], $calculated)->andReturn(true);
         $image->shouldReceive('save')->andReturn(true);
+
+        $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
+        $caller->shouldReceive('call')->with($image, $entry['action'], $calculated)->andReturn(true);
 
         $this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
     }
@@ -317,9 +337,13 @@ class ManagerTest extends ImagecacheTestCase
         );
 
         $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
-        $image->shouldReceive('call')->with($preset[0]['action'], $preset[0])->andReturn(true);
-        $image->shouldReceive('call')->with($preset[1]['action'], $preset[1])->andReturn(true);
         $image->shouldReceive('save')->andReturn(true);
+
+        $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
+        $caller->shouldReceive('call')->with($image, $preset[0]['action'], $preset[0])->andReturn(true);
+        $caller->shouldReceive('call')->with($image, $preset[1]['action'], $preset[1])->andReturn(true);
+
+
 
         $this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
     }
@@ -352,8 +376,10 @@ class ManagerTest extends ImagecacheTestCase
         $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
         $preset = array(array('action' => 'scale', 'width' => 200, 'height' => '200'));
 
-        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
-        $image->shouldReceive('call')->andReturn(false);
+        $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
+        $caller->shouldReceive('call')->andReturn(false);
+
+        $image = new Image($original_file, $this->getMockedToolkit());
 
         $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
     }

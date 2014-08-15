@@ -6,7 +6,7 @@
 
 namespace Onigoetz\Imagecache;
 
-use ReflectionMethod;
+use Onigoetz\Imagecache\Imagekit\Toolkit;
 
 /**
  * An image to run through imagecache
@@ -45,7 +45,7 @@ class Image
      * @param string $source
      * @param string $toolkit
      */
-    public function __construct($source, $toolkit)
+    public function __construct($source, Toolkit $toolkit)
     {
         $this->source = $source;
         $this->toolkit = $toolkit;
@@ -59,25 +59,9 @@ class Image
         }
     }
 
-    public function call($method, $args)
+    public function getToolkit()
     {
-        if (!method_exists($this, $method)) {
-            throw new \LogicException("Method '$method' doesn't exist");
-        }
-
-        $reflected = new ReflectionMethod(__CLASS__, $method);
-        $parameters = $reflected->getParameters();
-
-        $arguments = array();
-        foreach ($parameters as $param) {
-            if (array_key_exists($param->name, $args)) {
-                $arguments[$param->name] = $args[$param->name];
-            } else {
-                $arguments[$param->name] = ($param->isOptional()) ? $param->getDefaultValue() : null;
-            }
-        }
-
-        return call_user_func_array(array($this, $method), $arguments);
+        return $this->toolkit;
     }
 
     /**
@@ -90,11 +74,10 @@ class Image
      */
     protected function invoke($method, array $params = array())
     {
-        $function = array('Onigoetz\Imagecache\\Imagekit\\' . ucfirst($this->toolkit), $method);
-        if (method_exists($function[0], $function[1])) {
+        if (method_exists($this->getToolkit(), $method)) {
             array_unshift($params, $this);
 
-            $result = call_user_func_array($function, $params);
+            $result = call_user_func_array([$this->getToolkit(), $method], $params);
             $this->info = null;
             return $result;
         }

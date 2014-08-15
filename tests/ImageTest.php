@@ -6,14 +6,6 @@ use org\bovigo\vfs\vfsStream;
 
 class ImageTest extends ImagecacheTestCase
 {
-    function setAccessible($methodName)
-    {
-        $method = new ReflectionMethod('Onigoetz\Imagecache\Manager', $methodName);
-        $method->setAccessible(true);
-
-        return $method;
-    }
-
     function getImage()
     {
         $this->getImageFolder();
@@ -33,34 +25,6 @@ class ImageTest extends ImagecacheTestCase
     function testFileNotFound()
     {
         $this->assertFalse(new Image('/this/file/doesnt_exist', $this->getMockedToolkit()));
-    }
-
-    /**
-     * @expectedException \LogicException
-     */
-    function testCallMethodDoesntExist()
-    {
-        $image = $this->getImage();
-
-        $image->call('foo', array());
-    }
-
-    function testCallReorderArgs()
-    {
-        $this->markTestSkipped('Class Image needs to be mockable in an easier way');
-
-        $image = $this->getMockedImage();
-
-        $image->call('scale_and_crop', array());
-    }
-
-    function testCallFindsDefaultArgs()
-    {
-        $this->markTestSkipped('Class Image needs to be mockable in an easier way');
-
-        $image = $this->getMockedImage();
-
-        $image->call('scale_and_crop', array());
     }
 
     /**
@@ -89,7 +53,10 @@ class ImageTest extends ImagecacheTestCase
         $this->markTestSkipped('Class Image needs to be mockable in an easier way');
 
         $image = $this->getMockedImage();
-        $image->shouldReceive('resize')->andReturn('false');
+
+        var_dump($image->getToolkit());
+
+        $image->getToolkit()->shouldReceive('resize')->andReturn('false');
 
         $this->assertFalse($image->scale_and_crop(300, 300));
     }

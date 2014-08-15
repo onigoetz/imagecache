@@ -3,6 +3,7 @@
 include dirname(__DIR__) . '/vendor/autoload.php';
 
 use Mockery as m;
+use Onigoetz\Imagecache\Imagekit\Gd;
 use Onigoetz\Imagecache\Manager;
 use org\bovigo\vfs\vfsStream;
 
@@ -20,7 +21,7 @@ abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
 
     function getMockedToolkit()
     {
-        return 'gd';
+        return m::mock(new Gd);
     }
 
     function getManager($options = array(), $toolkit = null)

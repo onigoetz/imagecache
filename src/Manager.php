@@ -6,6 +6,8 @@
 
 namespace Onigoetz\Imagecache;
 
+use ReflectionMethod;
+
 /**
  * Image manager
  *
@@ -27,10 +29,36 @@ class Manager
      */
     protected $toolkit;
 
+    /**
+     * @var MethodCaller
+     */
+    protected $methodCaller;
+
     public function __construct($options, $toolkit)
     {
         $this->options = $options + array('path_images' => 'images', 'path_cache' => 'cache');
         $this->toolkit = $toolkit;
+    }
+
+    /**
+     * @return MethodCaller
+     */
+    public function getMethodCaller()
+    {
+        if (!$this->methodCaller) {
+            $this->methodCaller = new MethodCaller();
+        }
+
+        return $this->methodCaller;
+
+    }
+
+    /**
+     * @param MethodCaller $methodCaller
+     */
+    public function setMethodCaller(MethodCaller $methodCaller)
+    {
+        $this->methodCaller = $methodCaller;
     }
 
     public function url($preset, $file)
@@ -159,7 +187,7 @@ class Manager
 
             $method = $action['action'];
 
-            if (!$image->call($method, $action)) {
+            if (!$this->getMethodCaller()->call($image, $method, $action)) {
                 return false;
             }
         }

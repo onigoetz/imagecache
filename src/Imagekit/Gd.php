@@ -13,7 +13,7 @@ use Onigoetz\Imagecache\Image;
  *
  * @package Imagecache\Imagekit
  */
-class Gd
+class Gd implements Toolkit
 {
     /**
      * Scale an image to the specified size using GD.
