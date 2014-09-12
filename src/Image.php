@@ -43,7 +43,9 @@ class Image
      * Create an image and get informations about it
      *
      * @param string $source
-     * @param string $toolkit
+     * @param Toolkit $toolkit
+     *
+     * @throws \Exception if cannot find or load the file
      */
     public function __construct($source, Toolkit $toolkit)
     {
@@ -59,6 +61,9 @@ class Image
         }
     }
 
+    /**
+     * @return String
+     */
     public function getToolkit()
     {
         return $this->toolkit;
@@ -74,54 +79,67 @@ class Image
      */
     protected function invoke($method, array $params = array())
     {
-        if (method_exists($this->getToolkit(), $method)) {
-            array_unshift($params, $this);
+        array_unshift($params, $this);
 
-            $result = call_user_func_array([$this->getToolkit(), $method], $params);
-            $this->info = null;
-            return $result;
-        }
-
-        return false;
-    }
-
-    public function getWidth(){
-        if ($this->info == null) {
-            $this->getInfo();
-        }
-
-        return $this->info['width'];
-    }
-
-    public function getHeight(){
-        if ($this->info == null) {
-            $this->getInfo();
-        }
-
-        return $this->info['height'];
+        $result = call_user_func_array([$this->getToolkit(), $method], $params);
+        $this->info = null;
+        return $result;
     }
 
     /**
-     * @todo Can be cleaner
+     * Get informations and return a single item
      *
+     * @param $key
      * @return mixed
      */
+    protected function getFromInfo($key)
+    {
+        $this->getInfo();
+
+        return $this->info[$key];
+    }
+
+    /**
+     * File's width
+     *
+     * @return integer
+     */
+    public function getWidth(){
+        return $this->getFromInfo('width');
+    }
+
+    /**
+     * File's height
+     *
+     * @return integer
+     */
+    public function getHeight(){
+        return $this->getFromInfo('height');
+    }
+
+    /**
+     * File's extension
+     *
+     * @return string
+     */
     public function getExtension(){
-        if ($this->info == null) {
-            $this->getInfo();
-        }
-
-        return $this->info['extension'];
+        return $this->getFromInfo('extension');
     }
 
+    /**
+     * File's Mime Type
+     *
+     * @return string
+     */
     public function getMimeType() {
-        if ($this->info == null) {
-            $this->getInfo();
-        }
-
-        return $this->info['mime_type'];
+        return $this->getFromInfo('mime_type');
     }
 
+    /**
+     * File's size
+     *
+     * @return integer
+     */
     public function getFileSize() {
         return ($this->info != null)? $this->info['file_size'] : filesize($this->source);
     }
@@ -146,7 +164,7 @@ class Image
             return $this->info;
         }
 
-        $details = $this->invoke('get_info');
+        $details = $this->invoke('getInfo');
         if (isset($details) && is_array($details)) {
             $details['file_size'] = filesize($this->source);
         }
@@ -167,6 +185,8 @@ class Image
      * @param Integer $height The target height, in pixels.
      *
      * @return bool true or false, based on success.
+     *
+     * @throws \LogicException if the parameters are wrong
      *
      * @see resize()
      * @see crop()
@@ -294,6 +314,8 @@ class Image
      *
      * @return bool true or false, based on success.
      *
+     * @throws \LogicException if the parameters are wrong
+     *
      * @see scale_and_crop()
      * @see gd_crop()
      */
@@ -345,15 +367,15 @@ class Image
             $destination = $this->source;
         }
 
-        if ($this->invoke('save', array($destination))) {
-            // Clear the cached file size and refresh the image information.
-            clearstatcache();
-
-            if (chmod($destination, 0644)) {
-                return new Image($destination, $this->toolkit);
-            }
+        if (!$this->invoke('save', array($destination))) {
+            return false;
         }
 
-        return false;
+        // Clear the cached file size and refresh the image information.
+        clearstatcache();
+
+        chmod($destination, 0644);
+
+        return new Image($destination, $this->toolkit);
     }
 }

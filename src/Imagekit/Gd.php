@@ -16,16 +16,11 @@ use Onigoetz\Imagecache\Image;
 class Gd implements Toolkit
 {
     /**
-     * Scale an image to the specified size using GD.
-     *
-     * @param  Image $image An image object. The $image->resource, $image->info['width'], and $image->info['height'] values will be modified by this call.
-     * @param  int $width The new width of the resized image, in pixels.
-     * @param  int $height The new height of the resized image, in pixels.
-     * @return bool  true or false, based on success.
+     * {@inheritdoc}
      */
-    public static function resize(Image $image, $width, $height)
+    public function resize(Image $image, $width, $height)
     {
-        $res = self::create_tmp($image, $width, $height);
+        $res = $this->createTmp($image, $width, $height);
 
         if (!imagecopyresampled($res, $image->resource, 0, 0, 0, 0, $width, $height, $image->getWidth(), $image->getHeight())) {
             return false;
@@ -39,20 +34,13 @@ class Gd implements Toolkit
     }
 
     /**
-     * Rotate an image the given number of degrees.
-     *
-     * @param  Image $image An image object. The $image->resource, $image->info['width'], and $image->info['height'] values will be modified by this call.
-     * @param  int $degrees The number of (clockwise) degrees to rotate the image.
-     * @param  null $background An hexadecimal integer specifying the background color to use for the uncovered area of the image after the rotation. E.g. 0x000000 for black, 0xff00ff for magenta, and 0xffffff for white. For images that support transparency, this will default to transparent. Otherwise it will be white.
-     * @return bool  true or false, based on success.
+     * {@inheritdoc}
      */
-    public static function rotate(Image $image, $degrees, $background = null)
+    public function rotate(Image $image, $degrees, $background = null)
     {
         // PHP installations using non-bundled GD do not have imagerotate.
         if (!function_exists('imagerotate')) {
             throw new \Exception("The image $image->source could not be rotated because the imagerotate() function is not available in this PHP installation.");
-
-            return false;
         }
 
         // Convert the hexadecimal background value to a color index value.
@@ -95,18 +83,11 @@ class Gd implements Toolkit
     }
 
     /**
-     * Crop an image using the GD toolkit.
-     *
-     * @param  Image $image An image object. The $image->resource, $image->info['width'], and $image->info['height'] values will be modified by this call.
-     * @param  int $x The starting x offset at which to start the crop, in pixels.
-     * @param  int $y The starting y offset at which to start the crop, in pixels.
-     * @param  int $width The width of the cropped area, in pixels.
-     * @param  int $height The height of the cropped area, in pixels.
-     * @return bool  true or false, based on success.
+     * {@inheritdoc}
      */
-    public static function crop(Image $image, $x, $y, $width, $height)
+    public function crop(Image $image, $x, $y, $width, $height)
     {
-        $res = self::create_tmp($image, $width, $height);
+        $res = $this->createTmp($image, $width, $height);
 
         if (!imagecopyresampled($res, $image->resource, 0, 0, $x, $y, $width, $height, $width, $height)) {
             return false;
@@ -120,12 +101,7 @@ class Gd implements Toolkit
     }
 
     /**
-     * Convert an image resource to grayscale.
-     *
-     * Note that transparent GIFs loose transparency when desaturated.
-     *
-     * @param  Image $image An image object. The $image->resource value will be modified by this call.
-     * @return bool  true or false, based on success.
+     * {@inheritdoc}
      */
     public static function desaturate(Image $image)
     {
@@ -138,12 +114,9 @@ class Gd implements Toolkit
     }
 
     /**
-     * GD helper function to create an image resource from a file.
-     *
-     * @param  Image $image An image object. The $image->resource value will populated by this call.
-     * @return bool  true or false, based on success.
+     * {@inheritdoc}
      */
-    public static function load(Image $image)
+    public function load(Image $image)
     {
         $extension = str_replace('jpg', 'jpeg', $image->getExtension());
         $function = 'imagecreatefrom' . $extension;
@@ -152,15 +125,9 @@ class Gd implements Toolkit
     }
 
     /**
-     * GD helper to write an image resource to a destination file.
-     *
-     * @param  Image $image An image object.
-     * @param  string $destination A string file URI or path where the image should be saved.
-     * @return bool   true or false, based on success.
-     *
-     * @see image_save()
+     * {@inheritdoc}
      */
-    public static function save(Image $image, $destination)
+    public function save(Image $image, $destination)
     {
         $extension = str_replace('jpg', 'jpeg', $image->getExtension());
         $function = 'image' . $extension;
@@ -190,7 +157,7 @@ class Gd implements Toolkit
      * @param  int $height The new height of the new image, in pixels.
      * @return resource A GD image handle.
      */
-    public static function create_tmp(Image $image, $width, $height)
+    protected function createTmp(Image $image, $width, $height)
     {
         $res = imagecreatetruecolor($width, $height);
 
@@ -221,16 +188,9 @@ class Gd implements Toolkit
     }
 
     /**
-     * Get details about an image.
-     *
-     * @param  Image $image An image object.
-     * @return bool|array false, if the file could not be found or is not an image. Otherwise, a keyed array containing information about the image:
-     *   - "width": Width, in pixels.
-     *   - "height": Height, in pixels.
-     *   - "extension": Commonly used file extension for the image.
-     *   - "mime_type": MIME type ('image/jpeg', 'image/gif', 'image/png').
+     * {@inheritdoc}
      */
-    public static function get_info(Image $image)
+    public function getInfo(Image $image)
     {
         $details = false;
         $data = getimagesize($image->source);

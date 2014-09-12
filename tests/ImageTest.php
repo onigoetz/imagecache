@@ -47,27 +47,29 @@ class ImageTest extends ImagecacheTestCase
         $image->scale_and_crop(300, null);
     }
 
-
     function testScale_and_cropFails()
     {
-        $this->markTestSkipped('Class Image needs to be mockable in an easier way');
-
         $image = $this->getMockedImage();
 
-        var_dump($image->getToolkit());
-
-        $image->getToolkit()->shouldReceive('resize')->andReturn('false');
+        $image->getToolkit()->shouldReceive('resize')->andReturn(false);
 
         $this->assertFalse($image->scale_and_crop(300, 300));
     }
 
     function testRotateRandom()
     {
-        $this->markTestSkipped('Class Image needs to be mockable in an easier way');
+        $variation = 20;
+
+        $matcher = function($val) use ($variation) {
+            return ($val >= ($variation*-1) && $val <= $variation);
+        };
 
         $image = $this->getMockedImage();
-
-        $image->rotate(0);
+        $image->getToolkit()
+            ->shouldReceive('rotate')
+            ->with(m::type('Onigoetz\Imagecache\Image'), m::on($matcher), m::any())
+            ->andReturn(true);
+        $image->rotate($variation, null, true);
     }
 
     /**
@@ -130,6 +132,35 @@ class ImageTest extends ImagecacheTestCase
         $image->save();
 
         $this->assertFalse($image->getFileSize() == $original_size);
+    }
+
+    function testSaveFail()
+    {
+        $image = $this->getMockedImage();
+
+        $image->getToolkit()->shouldReceive('save')->andReturn(false);
+
+        $this->assertFalse($image->save());
+    }
+
+    function testGetMime()
+    {
+        $image = $this->getImage();
+        $this->assertEquals('image/png', $image->getMimeType());
+    }
+
+    /**
+     * @expectedException \Exception
+     */
+    function testLoadFail()
+    {
+        $this->getImageFolder();
+        $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
+
+        $toolkit = $this->getMockedToolkit();
+        $toolkit->shouldReceive('load')->andReturn(false);
+
+        new Image($original_file, $toolkit);
     }
 }
 
