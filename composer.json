@@ -15,7 +15,10 @@
 		"illuminate/support": "4.*",
 		"phpunit/phpunit": "4.*",
 		"mockery/mockery": "*",
-		"mikey179/vfsStream": "*"
+		"mikey179/vfsStream": "*",
+
+        "slim/slim": "2.4.*",
+        "there4/slim-test-helpers": "dev-master"
 	},
 	"suggest": {
 		"illuminate/support": "To use with Laravel"

@@ -28,40 +28,11 @@ Then we create the file `images.php`
 ```php
 <?php
 
-use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
-use Onigoetz\Imagecache\Exceptions\NotFoundException;
-use Onigoetz\Imagecache\Manager;
-use Onigoetz\Imagecache\Transfer;
-
 include 'vendor/autoload.php';
 
 $config = //your configuration here …
 
-//this will be different in the future
-$toolkit = 'gd';
-
-$imagecache = new Manager($config, $toolkit);
-
-try {
-    $final_file = $imagecache->handleRequest($_GET['preset'], $_GET['file']);
-} catch (InvalidPresetException $e) {
-    header('HTTP/1.0 404 Not Found');
-    echo $e->message();
-    exit;
-} catch (NotFoundException $e) {
-    header('HTTP/1.0 404 Not Found');
-    echo $e->message();
-    exit;
-}
-
-if (!$final_file) {
-    header('HTTP/1.0 500 Internal Server Error');
-    echo 'dunno ...';
-    exit;
-}
-
-$transfer = new Transfer();
-$transfer->transfer($final_file);
+\Onigoetz\Imagecache\Support\Raw\RawImagecacheService::run($config);
 
 ```
 

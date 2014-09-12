@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
 use Onigoetz\Imagecache\Exceptions\NotFoundException;
+use Onigoetz\Imagecache\Imagekit\Gd;
 use Onigoetz\Imagecache\Manager;
 use Onigoetz\Imagecache\Transfer;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +24,7 @@ class ImagecacheServiceProvider extends ServiceProvider
         $config = $this->app['config']->get('imagecache::imagecache');
 
         //TODO :: externalize that
-        $toolkit = 'gd';
+        $toolkit = new Gd();
 
         // Stopwatch - must be registered so the application doesn't fail if the profiler is disabled
         $this->app['imagecache'] = $this->app->share(
@@ -52,10 +53,13 @@ class ImagecacheServiceProvider extends ServiceProvider
                     return \Response::make('Dunno what happened', 500);
                 }
 
-                //TODO :: be more "symfony reponse" friendly
-                $transfer = new Transfer();
-                $transfer->transfer($final_file);
-                exit;
+                $transfer = new Transfer($final_file);
+
+                $callback = function () use ($transfer) {
+                    $transfer->stream();
+                };
+
+                return \Response::stream($callback, $transfer->getStatus(), $transfer->getHeaders());
             }
         )->where('file', '.*');
     }
