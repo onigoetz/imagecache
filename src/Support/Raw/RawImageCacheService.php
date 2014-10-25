@@ -39,7 +39,7 @@ class RawImagecacheService {
             header('HTTP/1.1 304 Not Modified');
         }
 
-        foreach($transfer->getHeaders() as $header) {
+        foreach($transfer->getFormattedHeaders() as $header) {
             header($header);
         }
 

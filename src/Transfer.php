@@ -32,6 +32,16 @@ class Transfer
         return $this->headers;
     }
 
+    public function getFormattedHeaders() {
+        $headers = [];
+
+        foreach ($this->headers as $name => $value) {
+            $headers[] = "$name: $value";
+        }
+
+        return $headers;
+    }
+
     public function getStatus() {
         return $this->status;
     }
@@ -39,12 +49,12 @@ class Transfer
     protected function getTransferInformations()
     {
         $size = getimagesize($this->path);
-        $headers[] = 'Content-Type: ' . $size['mime'];
+        $this->headers['Content-Type'] = $size['mime'];
 
         if ($fileinfo = stat($this->path)) {
-            $this->headers[] = 'Content-Length: ' . $fileinfo[7];
-            $this->headers[] = 'Expires: ' . gmdate('D, d M Y H:i:s', time() + 1209600) . ' GMT';
-            $this->headers[] = 'Cache-Control: max-age=1209600, private, must-revalidate';
+            $this->headers['Content-Length'] = $fileinfo[7];
+            $this->headers['Expires'] = gmdate('D, d M Y H:i:s', time() + 1209600) . ' GMT';
+            $this->headers['Cache-Control'] = 'max-age=1209600, private, must-revalidate';
             $this->getCachingHeaders($fileinfo);
         }
     }
@@ -77,7 +87,7 @@ class Transfer
     {
         // Set default values:
         $last_modified = gmdate('D, d M Y H:i:s', $fileinfo[9]) . ' GMT';
-        $etag = '"' . md5($last_modified) . '"';
+        $etag = md5($last_modified);
 
         // See if the client has provided the required HTTP headers:
         $if_modified_since = $this->server_value('HTTP_IF_MODIFIED_SINCE', false);
@@ -88,8 +98,8 @@ class Transfer
         }
 
         // Send appropriate response:
-        $this->headers[] = 'Last-Modified: ' . $last_modified;
-        $this->headers[] = 'ETag: ' . $etag;
+        $this->headers['Last-Modified'] = $last_modified;
+        $this->headers['ETag'] = $etag;
     }
 
     protected function server_value($key, $default)
