@@ -12,8 +12,8 @@
         "php": ">=5.4.0"
     },
 	"require-dev": {
-		"illuminate/support": "4.*",
-		"phpunit/phpunit": "4.*",
+		"illuminate/support": ">=4.0.0",
+		"phpunit/phpunit": "*",
 		"mockery/mockery": "*",
 		"mikey179/vfsStream": "*",
 
