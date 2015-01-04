@@ -351,23 +351,6 @@ class ManagerTest extends ImagecacheTestCase
     /**
      * @covers Onigoetz\Imagecache\Manager::buildImage
      */
-    function testBuildImageCannotSave()
-    {
-        $manager = $this->getManager();
-        $file = $this->getDummyImageName();
-        $original_file = vfsStream::url('root/images') . '/' . $file;
-        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
-        $preset = array(array('action' => 'scale', 'width' => 200, 'height' => '200'));
-
-        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
-        $image->shouldReceive('save')->andReturn(false);
-
-        $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
-    }
-
-    /**
-     * @covers Onigoetz\Imagecache\Manager::buildImage
-     */
     function testBuildImageManipulationFailed()
     {
         $manager = $this->getManager();
