@@ -3,7 +3,6 @@
 include dirname(__DIR__) . '/vendor/autoload.php';
 
 use Mockery as m;
-use Onigoetz\Imagecache\Imagekit\Gd;
 use Onigoetz\Imagecache\Manager;
 use org\bovigo\vfs\vfsStream;
 
@@ -19,34 +18,20 @@ abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
         m::close();
     }
 
-    function getMockedToolkit()
+    function getManager($options = array())
     {
-        return m::mock(new Gd);
-    }
-
-    function getManager($options = array(), $toolkit = null)
-    {
-        if ($toolkit == null) {
-            $toolkit = $this->getMockedToolkit();
-        }
-
         //Add default option
         $options += array('path_images_root' => $this->getImageFolder());
 
-        return new Manager($options, $toolkit);
+        return new Manager($options);
     }
 
-    function getMockedManager($options = array(), $toolkit = null)
+    function getMockedManager($options = array())
     {
-
-        if ($toolkit == null) {
-            $toolkit = $this->getMockedToolkit();
-        }
-
         //Add default option
         $options += array('path_images_root' => $this->getImageFolder());
 
-        return m::mock('Onigoetz\Imagecache\Manager', array($options, $toolkit))
+        return m::mock('Onigoetz\Imagecache\Manager', array($options))
             ->shouldAllowMockingProtectedMethods()
             ->makePartial();
     }
@@ -65,83 +50,70 @@ abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
     }
 }
 
-/*
-	PHasher is a naive perceptual hashing class for PHP.
-	@url https://raw.github.com/kennethrapp/phasher/master/phasher.class.php
-*/
-
-class PHasher
+/**
+ * Perceptual image diff
+ * http://www.phpied.com/image-diff/
+ */
+class ImageCompare
 {
-
-    /* hash two images and return an index of their similarty as a percentage. */
-    public static function compare($res1, $res2, $precision = 1)
+    public static function compare($res1, $res2)
     {
+        // create images
+        $i1 = @imagecreatefromstring(file_get_contents($res1));
+        $i2 = @imagecreatefromstring(file_get_contents($res2));
 
-        $hash1 = self::hashImage($res1); // this one should never be rotated
-        $hash2 = self::hashImage($res2);
-
-        $similarity = count($hash1);
-
-        // take the hamming distance between the hashes.
-        foreach ($hash1 as $key => $val) {
-            if ($hash1[$key] != $hash2[$key]) {
-                $similarity--;
-            }
+        // check if we were given garbage
+        if (!$i1) {
+            throw new Exception("$res1 is not a valid image");
         }
-        $percentage = round(($similarity / count($hash1) * 100), $precision);
-        return $percentage;
-    }
 
-    public static function arrayAverage($arr)
-    {
-        return floor(array_sum($arr) / count($arr));
-    }
+        if (!$i2) {
+            throw new Exception("$res2 is not a valid image");
+        }
 
-    /* build a perceptual hash out of an image. Just uses averaging because it's faster.
-        also we're storing the hash as an array of bits instead of a string.
-        http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html */
+        // dimensions of the first image
+        $sx1 = imagesx($i1);
+        $sy1 = imagesy($i1);
 
-    public static function hashImage($res, $size = 8)
-    {
+        // compare dimensions
+        if ($sx1 !== imagesx($i2) || $sy1 !== imagesy($i2)) {
+            throw new Exception("The images are not even the same size");
+        }
 
-        $res = imagecreatefromstring(file_get_contents($res)); // make sure this is a resource
-        $rescached = imagecreatetruecolor($size, $size);
+        // create a diff image
+        $diffi = imagecreatetruecolor($sx1, $sy1);
+        $green = imagecolorallocate($diffi, 0, 255, 0);
+        imagefill($diffi, 0, 0, imagecolorallocate($diffi, 0, 0, 0));
 
-        imagecopyresampled($rescached, $res, 0, 0, 0, 0, $size, $size, imagesx($res), imagesy($res));
-        imagecopymergegray($rescached, $res, 0, 0, 0, 0, $size, $size, 50);
+        // increment this counter when encountering a pixel diff
+        $different_pixels = 0;
 
-        $w = imagesx($rescached);
-        $h = imagesy($rescached);
+        // loop x and y
+        for ($x = 0; $x < $sx1; $x++) {
+            for ($y = 0; $y < $sy1; $y++) {
 
-        $pixels = array();
+                $rgb1 = imagecolorat($i1, $x, $y);
+                $pix1 = imagecolorsforindex($i1, $rgb1);
 
-        for ($y = 0; $y < $size; $y++) {
+                $rgb2 = imagecolorat($i2, $x, $y);
+                $pix2 = imagecolorsforindex($i2, $rgb2);
 
-            for ($x = 0; $x < $size; $x++) {
-                $rgb = imagecolorsforindex($rescached, imagecolorat($rescached, $x, $y));
+                if (($rgb1 & 0x7F000000) >> 24 != 127 && ($rgb2 & 0x7F000000) >> 24 != 127 && $pix1 !== $pix2) { // different pixel
+                    // increment and paint in the diff image
+                    $different_pixels++;
+                    imagesetpixel($diffi, $x, $y, $green);
+                }
 
-                $r = $rgb['red'];
-                $g = $rgb['green'];
-                $b = $rgb['blue'];
-
-                $gs = (($r * 0.299) + ($g * 0.587) + ($b * 0.114));
-                $gs = floor($gs);
-
-                $pixels[] = $gs;
             }
         }
 
-        // find the average value in the array
-        $avg = self::arrayAverage($pixels);
-
-        // create a hash (1 for pixels above the mean, 0 for average or below)
-        $index = 0;
-
-        foreach ($pixels as $px) {
-            $hash[$index] = ($px > $avg);
-            $index += 1;
+        if (!$different_pixels) {
+            return 100;
         }
 
-        return $hash;
+        imagepng($diffi, "{$res1}_diff.png");
+
+        $total = $sx1 * $sy1;
+        return 100 - number_format(100 * $different_pixels / $total, 2);
     }
 }

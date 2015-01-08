@@ -65,7 +65,7 @@ class ManagerUtilitiesTest extends ImagecacheTestCase
      */
     function testKeywords($result, $value, $current_pixels, $new_pixels)
     {
-        $manager = new Manager(array(), $this->getMockedToolkit());
+        $manager = new Manager(array());
 
         $this->assertEquals($result, $manager->keywords($value, $current_pixels, $new_pixels));
     }

@@ -6,7 +6,11 @@
 
 namespace Onigoetz\Imagecache;
 
-use Onigoetz\Imagecache\Imagekit\Toolkit;
+use Imagine\Filter\Advanced\Grayscale;
+use Imagine\Image\Box;
+use Imagine\Image\ImageInterface;
+use Imagine\Image\Point;
+use RuntimeException;
 
 /**
  * An image to run through imagecache
@@ -22,81 +26,71 @@ class Image
     public $source;
 
     /**
-     * Which toolkit to use to manage this image
-     * @var String
-     */
-    public $toolkit;
-
-    /**
      * Informations about the image
      * @var Array
      */
     protected $info;
 
     /**
-     * Resource used by GD
-     * @var resource
+     * Image resource
+     * @var \Imagine\Image\ImageInterface
      */
-    public $resource;
+    protected $image;
 
     /**
      * Create an image and get informations about it
      *
      * @param string $source
-     * @param Toolkit $toolkit
      *
      * @throws \Exception if cannot find or load the file
      */
-    public function __construct($source, Toolkit $toolkit)
+    public function __construct($source)
     {
         $this->source = $source;
-        $this->toolkit = $toolkit;
 
         if (!is_file($this->source) && !is_uploaded_file($this->source)) {
             throw new Exceptions\NotFoundException('file not found');
         }
 
-        if (!$this->invoke('load')) {
-            throw new \Exception('Cannot load file');
+        $imagine = $this->getImagine();
+        $this->image = $imagine->open($source);
+    }
+
+    /**
+     * @return ImageInterface
+     */
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param ImageInterface $image
+     * used mainly for unit tests, we cannot typehint as we get a mockery object
+     */
+    public function setImage($image)
+    {
+        $this->image = $image;
+    }
+
+    /**
+     * @return \Imagine\Image\ImagineInterface
+     * @codeCoverageIgnore This method is linked to the system, so we can't test it correctly
+     */
+    protected function getImagine() {
+        try {
+            return new \Imagine\Gd\Imagine();
+        } catch(RuntimeException $noGd) {
+            try {
+                return new \Imagine\Imagick\Imagine();
+            } catch(RuntimeException $noImagick) {
+                try {
+                    return new \Imagine\Gmagick\Imagine();
+                } catch(RuntimeException $noGmagick) {
+                    throw new RuntimeException("none of Gd, Imagick or Gmagick are available on this setup");
+                }
+            }
         }
-    }
-
-    /**
-     * @return String
-     */
-    public function getToolkit()
-    {
-        return $this->toolkit;
-    }
-
-    /**
-     * Invokes the given method using the currently selected toolkit.
-     *
-     * @param String $method A string containing the method to invoke.
-     * @param Array $params An optional array of parameters to pass to the toolkit method.
-     *
-     * @return mixed Mixed values (typically Boolean indicating successful operation).
-     */
-    protected function invoke($method, array $params = array())
-    {
-        array_unshift($params, $this);
-
-        $result = call_user_func_array([$this->getToolkit(), $method], $params);
-        $this->info = null;
-        return $result;
-    }
-
-    /**
-     * Get informations and return a single item
-     *
-     * @param $key
-     * @return mixed
-     */
-    protected function getFromInfo($key)
-    {
-        $this->getInfo();
-
-        return $this->info[$key];
     }
 
     /**
@@ -105,7 +99,7 @@ class Image
      * @return integer
      */
     public function getWidth(){
-        return $this->getFromInfo('width');
+        return $this->image->getSize()->getWidth();
     }
 
     /**
@@ -114,25 +108,7 @@ class Image
      * @return integer
      */
     public function getHeight(){
-        return $this->getFromInfo('height');
-    }
-
-    /**
-     * File's extension
-     *
-     * @return string
-     */
-    public function getExtension(){
-        return $this->getFromInfo('extension');
-    }
-
-    /**
-     * File's Mime Type
-     *
-     * @return string
-     */
-    public function getMimeType() {
-        return $this->getFromInfo('mime_type');
+        return $this->image->getSize()->getHeight();
     }
 
     /**
@@ -141,35 +117,28 @@ class Image
      * @return integer
      */
     public function getFileSize() {
-        return ($this->info != null)? $this->info['file_size'] : filesize($this->source);
+        return filesize($this->source);
     }
 
     /**
      * Get details about an image.
      *
-     * We support GIF, JPG and PNG file formats when used with the GD
-     * toolkit, and may support others, depending on which toolkits are
-     * installed.
-     *
      * @return bool|array false, if the file could not be found or is not an image. Otherwise, a keyed array containing information about the image:
      *   - "width": Width, in pixels.
      *   - "height": Height, in pixels.
-     *   - "extension": Commonly used file extension for the image.
-     *   - "mime_type": MIME type ('image/jpeg', 'image/gif', 'image/png').
      *   - "file_size": File size in bytes.
      */
     public function getInfo()
     {
-        if ($this->info != null) {
-            return $this->info;
-        }
+        $size = $this->image->getSize();
 
-        $details = $this->invoke('getInfo');
-        if (isset($details) && is_array($details)) {
-            $details['file_size'] = filesize($this->source);
-        }
+        $this->info = [
+            'width' => $size->getWidth(),
+            'height' => $size->getHeight(),
+            'file_size' => $this->getFileSize(),
+        ];
 
-        return $this->info = $details;
+        return $this->info;
     }
 
     /**
@@ -205,9 +174,8 @@ class Image
         $x = ($this->getWidth() * $scale - $width) / 2;
         $y = ($this->getHeight() * $scale - $height) / 2;
 
-        if ($this->resize($this->getWidth() * $scale, $this->getHeight() * $scale)) {
-            return $this->crop($x, $y, $width, $height);
-        }
+        $this->resize($this->getWidth() * $scale, $this->getHeight() * $scale);
+        $this->crop($x, $y, $width, $height);
 
         return false;
     }
@@ -226,37 +194,33 @@ class Image
      * @param Boolean $upscale
      *   Boolean indicating that files smaller than the dimensions will be scaled
      *   up. This generally results in a low quality image.
-     *
-     * @return bool true or false, based on success.
-     *
-     * @see scale_and_crop()
      */
     public function scale($width = null, $height = null, $upscale = false)
     {
-        $aspect = $this->getHeight() / $this->getWidth();
-
-        if ($upscale) {
-            // Set width/height according to aspect ratio if either is empty.
-            $width = !empty($width) ? $width : $height / $aspect;
-            $height = !empty($height) ? $height : $width / $aspect;
-        } else {
-            // Set impossibly large values if the width and height aren't set.
-            $width = !empty($width) ? $width : 9999999;
-            $height = !empty($height) ? $height : 9999999;
-
-            // Don't scale up.
-            if (round($width) >= $this->getWidth() && round($height) >= $this->getHeight()) {
-                return true;
-            }
+        if ($width == null && $height == null) {
+            throw new \LogicException('one of "width" or "height" must be set for "scale"');
         }
 
-        if ($aspect < $height / $width) {
-            $height = $width * $aspect;
-        } else {
-            $width = $height / $aspect;
+        //if we don't accept upscale and the width or height is bigger
+        if (!$upscale && (($width != null && $width > $this->getWidth()) || ($height != null && $height > $this->getHeight()))) {
+            return;
         }
 
-        return $this->resize($width, $height);
+        if ($width != null && $height != null) {
+            $this->resize($width, $height);
+        }
+
+        $size = $this->image->getSize();
+
+        if ($width != null) {
+            $size = $size->widen($width);
+        }
+
+        if ($height != null) {
+            $size = $size->heighten($height);
+        }
+
+        $this->image->resize($size);
     }
 
     /**
@@ -266,15 +230,12 @@ class Image
      * @param Integer $height The target height, in pixels.
      *
      * @return bool true or false, based on success.
-     *
-     * @see gd_resize()
      */
     public function resize($width, $height)
     {
-        $width = (int)round($width);
-        $height = (int)round($height);
+        $size = new Box($width, $height);
 
-        return $this->invoke('resize', array($width, $height));
+        $this->image->resize($size);
     }
 
     /**
@@ -287,9 +248,15 @@ class Image
      */
     public function rotate($degrees, $background = null, $random = false)
     {
-        // Set sane default values.
+        $palette = new \Imagine\Image\Palette\RGB();
+
         if (strlen(trim($background))) {
-            $background = hexdec(str_replace('#', '', $background));
+            $background = $palette->color($background, 0);
+        }
+
+        // by default the background is transparent if supported
+        if (!$background && $palette->supportsAlpha()) {
+            $background = $palette->color('fff', 100);
         }
 
         if ($random) {
@@ -297,7 +264,7 @@ class Image
             $degrees = rand(-1 * $deg, $deg);
         }
 
-        return $this->invoke('rotate', array($degrees, $background));
+        $this->image->rotate($degrees, $background);
     }
 
     /**
@@ -315,9 +282,6 @@ class Image
      * @return bool true or false, based on success.
      *
      * @throws \LogicException if the parameters are wrong
-     *
-     * @see scale_and_crop()
-     * @see gd_crop()
      */
     public function crop($xoffset, $yoffset, $width, $height)
     {
@@ -337,22 +301,19 @@ class Image
             throw new \LogicException('"height" must not be null for "crop"');
         }
 
-        $width = (int)round($width);
-        $height = (int)round($height);
+        $start = new Point($xoffset, $yoffset);
+        $size = new Box($width, $height);
 
-        return $this->invoke('crop', array($xoffset, $yoffset, $width, $height));
+        $this->image->crop($start, $size);
     }
 
     /**
      * Convert an image to grayscale.
-     *
-     * @return bool true or false, based on success.
-     *
-     * @see gd_desaturate()
      */
     public function desaturate()
     {
-        return $this->invoke('desaturate');
+        $grayscale = new Grayscale();
+        $grayscale->apply($this->image);
     }
 
     /**
@@ -367,7 +328,9 @@ class Image
             $destination = $this->source;
         }
 
-        if (!$this->invoke('save', array($destination))) {
+        try {
+            $this->image->save($destination);
+        } catch (\RuntimeException $e) {
             return false;
         }
 
@@ -376,6 +339,6 @@ class Image
 
         chmod($destination, 0644);
 
-        return new Image($destination, $this->toolkit);
+        return new Image($destination);
     }
 }

@@ -25,19 +25,13 @@ class Manager
     protected $options;
 
     /**
-     * @var string Image manipulator to use (GD for the moment)
-     */
-    protected $toolkit;
-
-    /**
      * @var MethodCaller
      */
     protected $methodCaller;
 
-    public function __construct($options, $toolkit)
+    public function __construct($options)
     {
         $this->options = $options + array('path_images' => 'images', 'path_cache' => 'cache');
-        $this->toolkit = $toolkit;
     }
 
     /**
@@ -153,7 +147,7 @@ class Manager
 
     protected function loadImage($src)
     {
-        return new Image($src, $this->toolkit);
+        return new Image($src);
     }
 
     /**
@@ -185,11 +179,12 @@ class Manager
                 $action['yoffset'] = $this->keywords($action['yoffset'], $image->getHeight(), $action['height']);
             }
 
-            $method = $action['action'];
-
-            if (!$this->getMethodCaller()->call($image, $method, $action)) {
+            try {
+                $this->getMethodCaller()->call($image, $action['action'], $action);
+            } catch (\RuntimeException $e) {
                 return false;
             }
+
         }
 
         if (!$image->save($dst)) {

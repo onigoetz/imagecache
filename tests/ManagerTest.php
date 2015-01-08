@@ -239,7 +239,7 @@ class ManagerTest extends ImagecacheTestCase
             'preset' => array(),
             'final_file' => 'vfs://root/images/cache/' . $preset . '/' . $file,
         );
-        $expected['image'] = new Image($expected['original_file'], $this->getMockedToolkit());
+        $expected['image'] = new Image($expected['original_file']);
 
         $manager = $this->getMockedManager(array('presets' => array($preset => $expected['preset'])));
 
@@ -313,7 +313,7 @@ class ManagerTest extends ImagecacheTestCase
         $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
         $preset = array($entry);
 
-        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
+        $image = m::mock(new Image($original_file));
         $image->shouldReceive('save')->andReturn(true);
 
         $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
@@ -336,7 +336,7 @@ class ManagerTest extends ImagecacheTestCase
             array('action' => 'crop', 'width' => 120, 'offsetx' => 'left', 'offsety' => 'top')
         );
 
-        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
+        $image = m::mock(new Image($original_file));
         $image->shouldReceive('save')->andReturn(true);
 
         $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
@@ -360,9 +360,9 @@ class ManagerTest extends ImagecacheTestCase
         $preset = array(array('action' => 'scale', 'width' => 200, 'height' => '200'));
 
         $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
-        $caller->shouldReceive('call')->andReturn(false);
+        $caller->shouldReceive('call')->andThrow(new \RuntimeException());
 
-        $image = new Image($original_file, $this->getMockedToolkit());
+        $image = new Image($original_file);
 
         $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
     }
@@ -378,7 +378,7 @@ class ManagerTest extends ImagecacheTestCase
         $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
         $preset = array(array('action' => 'scale', 'width' => 200, 'height' => '200'));
 
-        $image = m::mock(new Image($original_file, $this->getMockedToolkit()));
+        $image = m::mock(new Image($original_file));
         $image->shouldReceive('save')->andReturn(false);
 
         $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));

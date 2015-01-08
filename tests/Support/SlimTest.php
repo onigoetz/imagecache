@@ -110,4 +110,16 @@ class SlimTest extends ImagecacheTestCase {
         $this->client->get($file);
         $this->assertEquals(404, $this->client->response->status());
     }
+
+    public function testRequestCorruptImageFile()
+    {
+        $image = $this->getDummyImageName();
+
+        file_put_contents($this->presets['path_images_root'] . "/" . $this->presets['path_images'] . "/$image", "oxo");
+
+        $file = "/{$this->presets['path_images']}/{$this->presets['path_cache']}/40X40/$image";
+
+        $this->client->get($file);
+        $this->assertEquals(500, $this->client->response->status());
+    }
 }

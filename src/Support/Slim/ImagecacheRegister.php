@@ -2,22 +2,19 @@
 
 use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
 use Onigoetz\Imagecache\Exceptions\NotFoundException;
-use Onigoetz\Imagecache\Imagekit\Gd;
 use Onigoetz\Imagecache\Manager;
 use Onigoetz\Imagecache\Transfer;
 use Slim\Slim;
+use RuntimeException;
 
 class ImagecacheRegister
 {
     public static function register(Slim $app, $config)
     {
-        //TODO :: externalize that
-        $toolkit = new Gd();
-
         $app->container->singleton(
             'imagecache',
-            function () use ($config, $toolkit) {
-                return new Manager($config, $toolkit);
+            function () use ($config) {
+                return new Manager($config);
             }
         );
 
@@ -36,11 +33,9 @@ class ImagecacheRegister
                     $app->response->setStatus(404);
                     $app->response->body($e->getMessage());
                     return;
-                }
-
-                if (!$final_file) {
+                } catch (RuntimeException $e) {
                     $app->response->setStatus(500);
-                    $app->response->body('some error occured');
+                    $app->response->body($e->getMessage());
                     return;
                 }
 

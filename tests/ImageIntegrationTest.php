@@ -55,16 +55,22 @@ class ImageIntegrationTest extends ImagecacheTestCase
             ),
             array(
                 array(
+                    array('action' => 'scale', 'height' => 60, 'width' => 60),
+                ),
+                'scale-60-60.png'
+            ),
+            array(
+                array(
                     array('action' => 'resize', 'width' => 40, 'height' => 40),
                 ),
                 'resize-40-40.png'
             ),
-            /*array(     //TODO :: find why it doesn't work in php 5.5
+            array(
                 array(
                     array('action' => 'rotate', 'degrees' => 90),
                 ),
                 'rotate-90.png'
-            ),      */
+            ),
             array(
                 array(
                     array('action' => 'rotate', 'degrees' => 60, 'background' => '#FF0000'),
@@ -91,6 +97,7 @@ class ImageIntegrationTest extends ImagecacheTestCase
             ),
             array(
                 array(
+                    array('action' => 'resize', 'width' => 80, 'height' => 80), //resize for processing speed
                     array('action' => 'desaturate'),
                 ),
                 'desaturate.png'
@@ -108,7 +115,7 @@ class ImageIntegrationTest extends ImagecacheTestCase
         $final_file = vfsStream::url('root/images') . '/' . $generated;
         $final_file_compared = __DIR__ . '/Fixtures/result/' . $generated;
 
-        $image = new Image($original_file, $this->getMockedToolkit());
+        $image = new Image($original_file);
 
         //uncomment and the images will be created on disk
         //$this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file_compared));
@@ -116,8 +123,33 @@ class ImageIntegrationTest extends ImagecacheTestCase
         $this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
 
         //generated images must be at least 95% identical
-        $this->assertGreaterThan(95, PHasher::compare($final_file, $final_file_compared));
+        $this->assertGreaterThan(95, ImageCompare::compare($final_file, $final_file_compared));
+    }
+
+    function providerFailedImageGenerator()
+    {
+        return [
+            [
+                [
+                    ['action' => 'scale'],
+                ],
+                'You should at least provide width or height'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider providerFailedImageGenerator
+     * @expectedException \LogicException
+     */
+    function testFailGenerateImage($preset)
+    {
+        $manager = $this->getManager();
+        $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
+        $final_file = vfsStream::url('root/images') . '/willFailAnyway.png';
+
+        $image = new Image($original_file);
+
+        $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file);
     }
 }
-
-

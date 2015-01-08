@@ -2,16 +2,12 @@
 
 use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
 use Onigoetz\Imagecache\Exceptions\NotFoundException;
-use Onigoetz\Imagecache\Imagekit\Gd;
 use Onigoetz\Imagecache\Manager;
 use Onigoetz\Imagecache\Transfer;
 
 class RawImagecacheService {
     public static function run($config) {
-        //TODO :: change that
-        $toolkit = new Gd();
-
-        $imagecache = new Manager($config, $toolkit);
+        $imagecache = new Manager($config);
 
         try {
             $final_file = $imagecache->handleRequest($_GET['preset'], $_GET['file']);

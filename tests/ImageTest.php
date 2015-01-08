@@ -11,12 +11,7 @@ class ImageTest extends ImagecacheTestCase
         $this->getImageFolder();
         $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
 
-        return new Image($original_file, $this->getMockedToolkit());
-    }
-
-    function getMockedImage()
-    {
-        return m::mock($this->getImage());
+        return new Image($original_file);
     }
 
     /**
@@ -24,7 +19,7 @@ class ImageTest extends ImagecacheTestCase
      */
     function testFileNotFound()
     {
-        $this->assertFalse(new Image('/this/file/doesnt_exist', $this->getMockedToolkit()));
+        $this->assertFalse(new Image('/this/file/doesnt_exist'));
     }
 
     /**
@@ -47,15 +42,6 @@ class ImageTest extends ImagecacheTestCase
         $image->scale_and_crop(300, null);
     }
 
-    function testScale_and_cropFails()
-    {
-        $image = $this->getMockedImage();
-
-        $image->getToolkit()->shouldReceive('resize')->andReturn(false);
-
-        $this->assertFalse($image->scale_and_crop(300, 300));
-    }
-
     function testRotateRandom()
     {
         $variation = 20;
@@ -64,11 +50,11 @@ class ImageTest extends ImagecacheTestCase
             return ($val >= ($variation*-1) && $val <= $variation);
         };
 
-        $image = $this->getMockedImage();
-        $image->getToolkit()
-            ->shouldReceive('rotate')
-            ->with(m::type('Onigoetz\Imagecache\Image'), m::on($matcher), m::any())
-            ->andReturn(true);
+        $image = $this->getImage();
+        $image->setImage($mockedImage = m::mock($image->getImage()));
+
+        $mockedImage->shouldReceive('rotate')->with(m::on($matcher), m::type('Imagine\Image\Palette\Color\ColorInterface'));
+
         $image->rotate($variation, null, true);
     }
 
@@ -122,6 +108,19 @@ class ImageTest extends ImagecacheTestCase
         $this->assertTrue(file_exists($final_file));
     }
 
+    function testGetInfo()
+    {
+        $this->getImageFolder();
+        $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
+
+        $image =  new Image($original_file);
+
+        $this->assertEquals(
+            ['width' => 500, 'height' => 500, 'file_size' => filesize($original_file)],
+            $image->getInfo()
+        );
+    }
+
     function testSaveInPlace()
     {
         $image = $this->getImage();
@@ -136,31 +135,12 @@ class ImageTest extends ImagecacheTestCase
 
     function testSaveFail()
     {
-        $image = $this->getMockedImage();
+        $image = $this->getImage();
+        $image->setImage($mockedImage = m::mock($image->getImage()));
 
-        $image->getToolkit()->shouldReceive('save')->andReturn(false);
+        $mockedImage->shouldReceive('save')->andThrow(new \RuntimeException());
 
         $this->assertFalse($image->save());
-    }
-
-    function testGetMime()
-    {
-        $image = $this->getImage();
-        $this->assertEquals('image/png', $image->getMimeType());
-    }
-
-    /**
-     * @expectedException \Exception
-     */
-    function testLoadFail()
-    {
-        $this->getImageFolder();
-        $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
-
-        $toolkit = $this->getMockedToolkit();
-        $toolkit->shouldReceive('load')->andReturn(false);
-
-        new Image($original_file, $toolkit);
     }
 }
 
