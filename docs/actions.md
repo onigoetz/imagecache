@@ -21,7 +21,6 @@ __Options__
 
 - `width` : The target width, in pixels or percents. This value is omitted then the scaling will based only on the height value.
 - `height` : The target height, in pixels or percents. This value is omitted then the scaling will based only on the width value.
-- `upscale` : Boolean indicating that files smaller than the dimensions will be scaled up. This generally results in a low quality image. (Defaults to `false`)
 
 ### `scale_and_crop`
 
@@ -47,7 +46,7 @@ __Options__
 
 - `width` : The target width, in pixels or percents.
 - `height` : The target height, in pixels or percents.
-- `xoffset` : The top left coordinate, in pixels or keyword (top, left, bottom, right, center) of the crop area (x axis value), 
+- `xoffset` : The top left coordinate, in pixels or keyword (top, left, bottom, right, center) of the crop area (x axis value),
 - `yoffset` : The top left coordinate, in pixels or keyword (top, left, bottom, right, center) of the crop area (y axis value).
 
 

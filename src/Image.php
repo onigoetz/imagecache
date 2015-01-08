@@ -191,19 +191,11 @@ class Image
      * @param Integer $height
      *   The target height, in pixels. This value is omitted then the scaling will
      *   based only on the width value.
-     * @param Boolean $upscale
-     *   Boolean indicating that files smaller than the dimensions will be scaled
-     *   up. This generally results in a low quality image.
      */
-    public function scale($width = null, $height = null, $upscale = false)
+    public function scale($width = null, $height = null)
     {
         if ($width == null && $height == null) {
             throw new \LogicException('one of "width" or "height" must be set for "scale"');
-        }
-
-        //if we don't accept upscale and the width or height is bigger
-        if (!$upscale && (($width != null && $width > $this->getWidth()) || ($height != null && $height > $this->getHeight()))) {
-            return;
         }
 
         if ($width != null && $height != null) {

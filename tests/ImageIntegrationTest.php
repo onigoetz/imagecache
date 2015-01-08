@@ -43,12 +43,6 @@ class ImageIntegrationTest extends ImagecacheTestCase
             ),
             array(
                 array(
-                    array('action' => 'scale', 'width' => 600, 'upscale' => true),
-                ),
-                'scale-600-upscaled.png'
-            ),
-            array(
-                array(
                     array('action' => 'scale', 'height' => 60),
                 ),
                 'scale-__-60.png'
