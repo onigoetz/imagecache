@@ -203,14 +203,7 @@ class Image
         }
 
         $size = $this->image->getSize();
-
-        if ($width != null) {
-            $size = $size->widen($width);
-        }
-
-        if ($height != null) {
-            $size = $size->heighten($height);
-        }
+        $size = ($width != null)? $size->widen($width) : $size->heighten($height);
 
         $this->image->resize($size);
     }
@@ -304,8 +297,7 @@ class Image
      */
     public function desaturate()
     {
-        $grayscale = new Grayscale();
-        $grayscale->apply($this->image);
+        (new Grayscale())->apply($this->image);
     }
 
     /**
