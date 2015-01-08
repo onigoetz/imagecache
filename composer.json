@@ -26,9 +26,6 @@
 		"illuminate/support": "To use with Laravel"
 	},
     "autoload": {
-        "classmap": [
-            "src/migrations"
-        ],
         "psr-4": {
             "Onigoetz\\Imagecache\\": "src/"
         }
