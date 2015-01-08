@@ -17,9 +17,8 @@ before_script:
   - composer install --dev --no-interaction
 
 script:
-  - vendor/bin/phpunit
+  - vendor/bin/phpunit --coverage-text
 
 after_script:
   - wget https://scrutinizer-ci.com/ocular.phar
   - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml
-  - CODECLIMATE_REPO_TOKEN=4cb213e0d2f100ea9ca805419421219972940aeaee82f7326f1fcf6608e788e0 ./vendor/bin/test-reporter

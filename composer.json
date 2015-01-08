@@ -19,8 +19,7 @@
 		"mikey179/vfsStream": "*",
 
         "slim/slim": "2.4.*",
-        "there4/slim-test-helpers": "dev-master",
-        "codeclimate/php-test-reporter": "~0.1@dev"
+        "there4/slim-test-helpers": "dev-master"
 	},
 	"suggest": {
 		"illuminate/support": "To use with Laravel"
