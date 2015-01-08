@@ -69,13 +69,15 @@ class ImageIntegrationTest extends ImagecacheTestCase
                 array(
                     array('action' => 'rotate', 'degrees' => 90),
                 ),
-                'rotate-90.png'
+                'rotate-90.png',
+                '5.5'
             ),
             array(
                 array(
                     array('action' => 'rotate', 'degrees' => 60, 'background' => '#FF0000'),
                 ),
-                'rotate-60-F00.png'
+                'rotate-60-F00.png',
+                '5.5'
             ),
             array(
                 array(
@@ -108,8 +110,12 @@ class ImageIntegrationTest extends ImagecacheTestCase
     /**
      * @dataProvider providerImageGenerator
      */
-    function testGenerateImage($preset, $generated)
+    function testGenerateImage($preset, $generated, $requires = null)
     {
+        if ($requires && version_compare(PHP_VERSION, $requires, '<')) {
+            $this->markTestSkipped('PHP %s (or later) is required.', $requires);
+        }
+
         $manager = $this->getManager();
         $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
         $final_file = vfsStream::url('root/images') . '/' . $generated;
