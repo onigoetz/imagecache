@@ -32,7 +32,10 @@ include 'vendor/autoload.php';
 
 $config = //your configuration here …
 
-\Onigoetz\Imagecache\Support\Raw\RawImagecacheService::run($config);
+\Onigoetz\Imagecache\Support\Raw\RawImagecacheService::run($config, $_GET);
+
+// You can replace `$_GET` with an array containing the `preset` and `file` keys.
+// This allows you to replace the `$_GET` with a custom function if needed.
 
 ```
 

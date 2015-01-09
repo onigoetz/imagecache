@@ -102,6 +102,16 @@ class Manager
         return $action;
     }
 
+    /**
+     * Take a preset and a file and return a transformed image
+     *
+     * @param $preset_key string
+     * @param $file string
+     * @return string
+     * @throws Exceptions\InvalidPresetException
+     * @throws Exceptions\NotFoundException
+     * @throws \RuntimeException
+     */
     public function handleRequest($preset_key, $file)
     {
         //do it at the beginning for early validation
@@ -114,19 +124,7 @@ class Manager
 
         $final_file = $this->url($preset_key, $file);
 
-        //create the folder path (and chmod it)
-        $directory = dirname($final_file);
-        if (!is_dir($directory)) {
-            $folder_path = explode('/', $directory);
-            $image_path = $this->options['path_images_root'];
-            foreach ($folder_path as $element) {
-                $image_path .= '/' . $element;
-                if (!is_dir($image_path)) {
-                    mkdir($image_path, 0755, true);
-                    chmod($image_path, 0755);
-                }
-            }
-        }
+        $this->verifyDirectoryExistence($this->options['path_images_root'], dirname($final_file));
 
         $final_file = $this->options['path_images_root'] . '/' . $final_file;
 
@@ -134,15 +132,31 @@ class Manager
             return $final_file;
         }
 
-        if (!$image = $this->loadImage($original_file)) {
-            return false;
+        $image = $this->loadImage($original_file);
+
+        return $this->buildImage($preset, $image, $final_file)->source;
+    }
+
+    /**
+     * Create the folder containing the cached images if it doesn't exist
+     *
+     * @param $base
+     * @param $cacheDir
+     */
+    protected function verifyDirectoryExistence($base, $cacheDir)
+    {
+        if (is_dir("$base/$cacheDir")) {
+            return;
         }
 
-        if ($this->buildImage($preset, $image, $final_file)) {
-            return $final_file;
+        $folder_path = explode('/', $cacheDir);
+        foreach ($folder_path as $element) {
+            $base .= '/' . $element;
+            if (!is_dir($base)) {
+                mkdir($base, 0755, true);
+                chmod($base, 0755);
+            }
         }
-
-        return false;
     }
 
     protected function loadImage($src)
@@ -153,10 +167,11 @@ class Manager
     /**
      * Create a new image based on an image preset.
      *
-     * @param  array $actions An image preset array.
-     * @param  Image $image Path of the source file.
-     * @param  string $dst Path of the destination file.
-     * @return bool   true if an image derivative is generated, false if no image derivative is generated. NULL if the derivative is being generated.
+     * @param array $actions An image preset array.
+     * @param Image $image Path of the source file.
+     * @param string $dst Path of the destination file.
+     * @return Image
+     * @throws \RuntimeException
      */
     protected function buildImage($actions, Image $image, $dst)
     {
@@ -179,19 +194,10 @@ class Manager
                 $action['yoffset'] = $this->keywords($action['yoffset'], $image->getHeight(), $action['height']);
             }
 
-            try {
-                $this->getMethodCaller()->call($image, $action['action'], $action);
-            } catch (\RuntimeException $e) {
-                return false;
-            }
-
+            $this->getMethodCaller()->call($image, $action['action'], $action);
         }
 
-        if (!$image->save($dst)) {
-            return false;
-        }
-
-        return true;
+        return $image->save($dst);
     }
 
     /**

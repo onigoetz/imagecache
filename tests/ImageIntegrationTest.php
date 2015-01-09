@@ -118,9 +118,12 @@ class ImageIntegrationTest extends ImagecacheTestCase
         $image = new Image($original_file);
 
         //uncomment and the images will be created on disk
-        //$this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file_compared));
+        //$this->assertInstanceOf('\Onigoetz\Imagecache\Image', $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file_compared));
 
-        $this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+        $this->assertInstanceOf(
+            '\Onigoetz\Imagecache\Image',
+            $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file)
+        );
 
         //generated images must be at least 95% identical
         $this->assertGreaterThan(95, ImageCompare::compare($final_file, $final_file_compared));

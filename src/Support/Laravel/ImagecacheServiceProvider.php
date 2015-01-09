@@ -48,10 +48,8 @@ class ImagecacheServiceProvider extends ServiceProvider
                     return \Response::make('Invalid preset', 404);
                 } catch (NotFoundException $e) {
                     return \Response::make('File not found', 404);
-                }
-
-                if (!$final_file) {
-                    return \Response::make('Dunno what happened', 500);
+                } catch (\RuntimeException $e) {
+                    return \Response::make($e->message(), 500);
                 }
 
                 $transfer = new Transfer($final_file);

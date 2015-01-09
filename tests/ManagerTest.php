@@ -9,6 +9,11 @@ use org\bovigo\vfs\vfsStream;
 class ManagerTest extends ImagecacheTestCase
 {
 
+    function getDummyImageUrl()
+    {
+        return vfsStream::url('root/images') . '/' . $this->getDummyImageName();
+    }
+
     function setAccessible($methodName)
     {
         $method = new ReflectionMethod('Onigoetz\Imagecache\Manager', $methodName);
@@ -187,7 +192,7 @@ class ManagerTest extends ImagecacheTestCase
         mkdir($dir, 0755, true);
         touch($final_file);
 
-        $manager->shouldReceive('buildImage')->andReturn(false);
+        $manager->shouldReceive('buildImage')->never();
 
         $this->assertEquals($final_file, $manager->handleRequest($preset, $file));
     }
@@ -204,7 +209,7 @@ class ManagerTest extends ImagecacheTestCase
 
         $this->assertNull($this->vfsRoot->getChild('images')->getChild('cache'));
 
-        $manager->shouldReceive('buildImage')->andReturn(true);
+        $manager->shouldReceive('buildImage')->andReturn(new Image($this->getDummyImageUrl()));
 
         $manager->handleRequest($preset, $file);
 
@@ -216,22 +221,26 @@ class ManagerTest extends ImagecacheTestCase
 
     /**
      * @covers Onigoetz\Imagecache\Manager::handleRequest
+     * @expectedException \RuntimeException
      */
     function testHandleRequestCannotLoadImage()
     {
         $preset = '200X';
 
         $manager = $this->getMockedManager(array('presets' => array($preset => array())));
-        $manager->shouldReceive('loadImage')->andReturn(false);
+        $manager->shouldReceive('loadImage')->andThrow(new \RuntimeException('corrupt image'));
 
-        $this->assertFalse($manager->handleRequest($preset, $this->getDummyImageName()));
+        $manager->handleRequest($preset, $this->getDummyImageName());
     }
 
     /**
      * @covers Onigoetz\Imagecache\Manager::handleRequest
+     * @covers Onigoetz\Imagecache\Manager::verifyDirectoryExistence
      */
-    function testHandleRequest()
+    function testHandleRequestFull()
     {
+        $imageFolder = $this->getImageFolder();
+
         $file = $this->getDummyImageName();
         $preset = '200X';
         $expected = array(
@@ -241,17 +250,31 @@ class ManagerTest extends ImagecacheTestCase
         );
         $expected['image'] = new Image($expected['original_file']);
 
-        $manager = $this->getMockedManager(array('presets' => array($preset => $expected['preset'])));
+        $manager = $this->getMockedManager(
+            ['presets' => [$preset => $expected['preset']], 'path_images_root' => $imageFolder]
+        );
 
         $manager->shouldReceive('loadImage')->with($expected['original_file'])->andReturn($expected['image']);
-        $manager->shouldReceive('buildImage')->with($expected['preset'], $expected['image'], $expected['final_file'])
-            ->andReturn(true);
+        $manager->shouldReceive('buildImage')
+            ->once()
+            ->with($expected['preset'], $expected['image'], $expected['final_file'])
+            ->andReturn(new Image($expected['original_file'])); //we use the original file, so we don't have to generate one.
 
+        $manager->handleRequest($preset, $file);
+
+        // as the image generation is mocked
+        // we need to create it now
+        touch($expected['final_file']);
+
+        // do it twice to test that the directory
+        // is not created twice and that the image
+        // is sent without being re-generated
         $manager->handleRequest($preset, $file);
     }
 
     /**
      * @covers Onigoetz\Imagecache\Manager::handleRequest
+     * @expectedException \RuntimeException
      */
     function testHandleFailedRequest()
     {
@@ -260,7 +283,7 @@ class ManagerTest extends ImagecacheTestCase
 
         $manager = $this->getMockedManager(array('presets' => array($preset => array())));
 
-        $manager->shouldReceive('buildImage')->andReturn(false);
+        $manager->shouldReceive('buildImage')->andThrow(new \RuntimeException('failed for a reason'));
 
         $manager->handleRequest($preset, $file);
     }
@@ -314,12 +337,12 @@ class ManagerTest extends ImagecacheTestCase
         $preset = array($entry);
 
         $image = m::mock(new Image($original_file));
-        $image->shouldReceive('save')->andReturn(true);
+        $image->shouldReceive('save')->andReturn(clone $image);
 
         $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
         $caller->shouldReceive('call')->with($image, $entry['action'], $calculated)->andReturn(true);
 
-        $this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+        $this->assertInstanceOf('\Onigoetz\Imagecache\Image', $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
     }
 
     /**
@@ -337,7 +360,7 @@ class ManagerTest extends ImagecacheTestCase
         );
 
         $image = m::mock(new Image($original_file));
-        $image->shouldReceive('save')->andReturn(true);
+        $image->shouldReceive('save')->andReturn(clone $image);
 
         $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
         $caller->shouldReceive('call')->with($image, $preset[0]['action'], $preset[0])->andReturn(true);
@@ -345,11 +368,12 @@ class ManagerTest extends ImagecacheTestCase
 
 
 
-        $this->assertTrue($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+        $this->assertInstanceOf('\Onigoetz\Imagecache\Image', $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
     }
 
     /**
      * @covers Onigoetz\Imagecache\Manager::buildImage
+     * @expectedException \RuntimeException
      */
     function testBuildImageManipulationFailed()
     {
@@ -364,11 +388,12 @@ class ManagerTest extends ImagecacheTestCase
 
         $image = new Image($original_file);
 
-        $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+        $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file);
     }
 
     /**
      * @covers Onigoetz\Imagecache\Manager::buildImage
+     * @expectedException \RuntimeException
      */
     function testBuildImageSaveFailed()
     {
@@ -379,8 +404,8 @@ class ManagerTest extends ImagecacheTestCase
         $preset = array(array('action' => 'scale', 'width' => 200, 'height' => '200'));
 
         $image = m::mock(new Image($original_file));
-        $image->shouldReceive('save')->andReturn(false);
+        $image->shouldReceive('save')->andThrow(new \RuntimeException('can\'t write to disk'));
 
-        $this->assertFalse($this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+        $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file);
     }
 }

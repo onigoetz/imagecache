@@ -304,7 +304,8 @@ class Image
      * Close the image and save the changes to a file.
      *
      * @param  string|null $destination Destination path where the image should be saved. If it is empty the original image file will be overwritten.
-     * @return bool|Image  image or false, based on success.
+     * @return Image  image or false, based on success.
+     * @throws \RuntimeException
      */
     public function save($destination = null)
     {
@@ -312,11 +313,7 @@ class Image
             $destination = $this->source;
         }
 
-        try {
-            $this->image->save($destination);
-        } catch (\RuntimeException $e) {
-            return false;
-        }
+        $this->image->save($destination);
 
         // Clear the cached file size and refresh the image information.
         clearstatcache();

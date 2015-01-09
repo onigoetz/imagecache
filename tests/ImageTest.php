@@ -133,6 +133,9 @@ class ImageTest extends ImagecacheTestCase
         $this->assertFalse($image->getFileSize() == $original_size);
     }
 
+    /**
+     * @expectedException \RuntimeException
+     */
     function testSaveFail()
     {
         $image = $this->getImage();
@@ -140,7 +143,7 @@ class ImageTest extends ImagecacheTestCase
 
         $mockedImage->shouldReceive('save')->andThrow(new \RuntimeException());
 
-        $this->assertFalse($image->save());
+        $image->save();
     }
 }
 

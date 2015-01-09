@@ -6,11 +6,11 @@ use Onigoetz\Imagecache\Manager;
 use Onigoetz\Imagecache\Transfer;
 
 class RawImagecacheService {
-    public static function run($config) {
+    public static function run($config, $request) {
         $imagecache = new Manager($config);
 
         try {
-            $final_file = $imagecache->handleRequest($_GET['preset'], $_GET['file']);
+            $final_file = $imagecache->handleRequest($request['preset'], $request['file']);
         } catch (InvalidPresetException $e) {
             header('HTTP/1.0 404 Not Found');
             echo $e->message();
@@ -19,11 +19,9 @@ class RawImagecacheService {
             header('HTTP/1.0 404 Not Found');
             echo $e->message();
             return;
-        }
-
-        if (!$final_file) {
+        } catch (\RuntimeException $e) {
             header('HTTP/1.0 500 Internal Server Error');
-            echo 'dunno ...';
+            echo $e->message();
             return;
         }
 
