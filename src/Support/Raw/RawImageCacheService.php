@@ -27,11 +27,14 @@ class RawImagecacheService {
 
         $transfer = new Transfer($final_file);
 
-        if($transfer->getStatus() == 200) {
-            header('HTTP/1.1 200 OK');
-        } elseif($transfer->getStatus() == 304) {
+        // if the status is 304, we don't
+        // need to send the content with it
+        if ($transfer->getStatus() == 304) {
             header('HTTP/1.1 304 Not Modified');
+            return;
         }
+
+        header('HTTP/1.1 200 OK');
 
         foreach($transfer->getFormattedHeaders() as $header) {
             header($header);
