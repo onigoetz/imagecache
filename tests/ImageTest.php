@@ -1,5 +1,9 @@
 <?php
 
+use Imagine\Image\Box;
+use Imagine\Image\BoxInterface;
+use Imagine\Image\Point;
+use Imagine\Image\PointInterface;
 use Mockery as m;
 use Onigoetz\Imagecache\Image;
 use org\bovigo\vfs\vfsStream;
@@ -40,6 +44,44 @@ class ImageTest extends ImagecacheTestCase
         $image = $this->getImage();
 
         $image->scale_and_crop(300, null);
+    }
+
+    function providerScaleAndCrop() {
+        return [
+            [new Box(300, 200), new Box(100, 100), new Box(150, 100), new Point(25, 0)],
+            [new Box(252, 150), new Box(100, 100), new Box(168, 100), new Point(34, 0)],
+            [new Box(200, 400), new Box(100, 100), new Box(100, 200), new Point(0, 50)],
+        ];
+    }
+
+    /**
+     * @dataProvider providerScaleAndCrop
+     */
+    function testScale_and_cropResize($originalImageSize, $resizeDestination, $scaled, $position)
+    {
+        $image = $this->getImage();
+        $image->setImage($mockedImage = m::mock($image->getImage()));
+
+        $scaledMatcher = function(BoxInterface $size) use ($scaled) {
+            $this->assertEquals(strval($scaled), strval($size));
+            return strval($size) == strval($scaled);
+        };
+
+        $resizeMatcher = function(BoxInterface $size) use ($resizeDestination) {
+            $this->assertEquals(strval($resizeDestination), strval($size));
+            return strval($resizeDestination) == strval($size);
+        };
+
+        $pointMatcher = function(PointInterface $point) use ($position) {
+            $this->assertEquals(strval($position), strval($point));
+            return strval($position) == strval($point);
+        };
+
+        $mockedImage->shouldReceive('getSize')->andReturn($originalImageSize);
+        $mockedImage->shouldReceive('crop')->with(m::on($pointMatcher), m::on($resizeMatcher));
+        $mockedImage->shouldReceive('resize')->with(m::on($scaledMatcher));
+
+        $image->scale_and_crop($resizeDestination->getWidth(), $resizeDestination->getHeight());
     }
 
     function testRotateRandom()
