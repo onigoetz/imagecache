@@ -58,7 +58,7 @@ class ImagecacheServiceProvider extends ServiceProvider
                     $transfer->stream();
                 };
 
-                return \Response::stream($callback, $transfer->getStatus(), $transfer->getFormattedHeaders());
+                return \Response::stream($callback, $transfer->getStatus(), $transfer->getHeaders());
             }
         )->where('file', '.*');
     }
