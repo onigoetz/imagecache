@@ -51,6 +51,7 @@ class ImageTest extends ImagecacheTestCase
             [new Box(300, 200), new Box(100, 100), new Box(150, 100), new Point(25, 0)],
             [new Box(252, 150), new Box(100, 100), new Box(168, 100), new Point(34, 0)],
             [new Box(200, 400), new Box(100, 100), new Box(100, 200), new Point(0, 50)],
+            [new Box(797, 1100), new Box(60, 75), new Box(60, 83), new Point(0, 4)],
         ];
     }
 

@@ -171,10 +171,12 @@ class Image
         }
 
         $scale = max($width / $this->getWidth(), $height / $this->getHeight());
-        $x = ($this->getWidth() * $scale - $width) / 2;
-        $y = ($this->getHeight() * $scale - $height) / 2;
+        $w = ceil($this->getWidth() * $scale);
+        $h = ceil($this->getHeight() * $scale);
+        $x = ($w - $width) / 2;
+        $y = ($h - $height) / 2;
 
-        $this->resize($this->getWidth() * $scale, $this->getHeight() * $scale);
+        $this->resize($w, $h);
         $this->crop($x, $y, $width, $height);
 
         return false;
@@ -218,9 +220,7 @@ class Image
      */
     public function resize($width, $height)
     {
-        $size = new Box($width, $height);
-
-        $this->image->resize($size);
+        $this->image->resize(new Box($width, $height));
     }
 
     /**
