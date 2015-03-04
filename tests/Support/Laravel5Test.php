@@ -31,19 +31,9 @@ class Laravel5Test extends Laravel5TestCase {
         $this->assertInstanceOf('\Onigoetz\Imagecache\Manager', $this->app['imagecache']);
     }
 
-    public function testRoute()
-    {
-        $this->markTestSkipped('not ready');
-
-        $route = $this->app->router->getNamedRoute('onigoetz.imagecache');
-
-        $this->assertInstanceOf('\Slim\Route', $route);
-        $this->assertEquals("/{$this->presets['path_images']}/{$this->presets['path_cache']}/:preset/:file", $route->getPattern());
-    }
-
     public function testRequestImage()
     {
-        $this->markTestSkipped('not ready');
+        //$this->markTestSkipped('not ready');
 
         $image = $this->getDummyImageName();
 
@@ -56,8 +46,8 @@ class Laravel5Test extends Laravel5TestCase {
 
         ob_start();
         $response->sendContent();
-        $content = ob_get_contents();
-        ob_end_clean();
+        $content = ob_get_clean();
+        ob_start(); //if we don't do a new ob_start the test is marked as risky
 
         file_put_contents($tmpfile, $content);
 
