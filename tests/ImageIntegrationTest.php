@@ -3,6 +3,8 @@
 use Mockery as m;
 use Onigoetz\Imagecache\Image;
 use org\bovigo\vfs\vfsStream;
+use Jenssegers\ImageHash\Implementations\DifferenceHash;
+use Jenssegers\ImageHash\ImageHash;
 
 class ImageIntegrationTest extends ImagecacheTestCase
 {
@@ -125,8 +127,10 @@ class ImageIntegrationTest extends ImagecacheTestCase
             $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file)
         );
 
+        $hasher = new ImageHash(new DifferenceHash);
+
         //generated images must be at least 95% identical
-        $this->assertGreaterThan(95, ImageCompare::compare($final_file, $final_file_compared));
+        $this->assertLessThan(3, $hasher->compare($final_file, $final_file_compared));
     }
 
     function providerFailedImageGenerator()

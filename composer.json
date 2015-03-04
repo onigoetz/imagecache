@@ -17,6 +17,7 @@
 		"phpunit/phpunit": "*",
 		"mockery/mockery": "*",
 		"mikey179/vfsStream": "*",
+        "jenssegers/imagehash": "dev-master",
 
         "slim/slim": "2.4.*",
         "there4/slim-test-helpers": "dev-master"
