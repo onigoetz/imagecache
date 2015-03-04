@@ -13,14 +13,17 @@
         "imagine/imagine": "dev-master"
     },
 	"require-dev": {
-		"illuminate/support": ">=4.0.0",
+
 		"phpunit/phpunit": "*",
 		"mockery/mockery": "*",
 		"mikey179/vfsStream": "*",
         "jenssegers/imagehash": "dev-master",
 
         "slim/slim": "2.4.*",
-        "there4/slim-test-helpers": "dev-master"
+        "there4/slim-test-helpers": "dev-master",
+
+        "illuminate/support": ">=5.0.0",
+        "orchestra/testbench": "3.*"
 	},
 	"suggest": {
 		"illuminate/support": "To use with Laravel"

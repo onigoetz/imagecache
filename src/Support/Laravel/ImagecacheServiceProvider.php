@@ -19,6 +19,11 @@ class ImagecacheServiceProvider extends ServiceProvider
         $this->app['config']->package('onigoetz/imagecache', __DIR__ . '/../../config');
     }
 
+    public function getConfiguration()
+    {
+        return $this->app['config']->get('imagecache::imagecache');
+    }
+
     /**
      * Register imagecache
      */
@@ -26,7 +31,7 @@ class ImagecacheServiceProvider extends ServiceProvider
     {
         $this->app['imagecache'] = $this->app->share(
             function () {
-                $config = $this->app['config']->get('imagecache::imagecache');
+                $config = $this->getConfiguration();
 
                 return new Manager($config);
             }
@@ -35,7 +40,7 @@ class ImagecacheServiceProvider extends ServiceProvider
 
     public function registerRoute()
     {
-        $config = $this->app['config']->get('imagecache::imagecache');
+        $config = $this->getConfiguration();
 
         $url = "{$config['path_images']}/{$config['path_cache']}/{preset}/{file}";
 
@@ -49,7 +54,7 @@ class ImagecacheServiceProvider extends ServiceProvider
                 } catch (NotFoundException $e) {
                     return \Response::make('File not found', 404);
                 } catch (\RuntimeException $e) {
-                    return \Response::make($e->message(), 500);
+                    return \Response::make($e->getMessage(), 500);
                 }
 
                 $transfer = new Transfer($final_file);

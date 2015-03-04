@@ -6,13 +6,34 @@ use Mockery as m;
 use Onigoetz\Imagecache\Manager;
 use org\bovigo\vfs\vfsStream;
 
-abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
-{
+trait ImagecacheTestTrait {
+
     /**
      * @var \org\bovigo\vfs\vfsStreamDirectory
      */
     protected $vfsRoot;
 
+    function getDummyImageName()
+    {
+        return '500px-Smiley.png';
+    }
+
+    function getImageFolder()
+    {
+        $this->vfsRoot = vfsStream::setup('root');
+        mkdir(vfsStream::url('root') . '/images');
+        vfsStream::copyFromFileSystem(__DIR__ . '/Fixtures/source', $this->vfsRoot->getChild('images'));
+        return vfsStream::url('root');
+    }
+}
+
+abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
+{
+    use ImagecacheTestTrait;
+
+    /**
+     * {@inheritdoc}
+     */
     public function tearDown()
     {
         m::close();
@@ -35,17 +56,42 @@ abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
             ->shouldAllowMockingProtectedMethods()
             ->makePartial();
     }
+}
 
-    function getImageFolder()
+class Laravel5TestCase extends \Orchestra\Testbench\TestCase
+{
+    use ImagecacheTestTrait;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setUp()
     {
-        $this->vfsRoot = vfsStream::setup('root');
-        mkdir(vfsStream::url('root') . '/images');
-        vfsStream::copyFromFileSystem(__DIR__ . '/Fixtures/source', $this->vfsRoot->getChild('images'));
-        return vfsStream::url('root');
+        if (! $this->app) {
+            $this->refreshApplication();
+        }
+
+        $artisan = $this->app->make('Illuminate\Contracts\Console\Kernel');
+        $artisan->call('vendor:publish');
+
+        //refresh configuration values
+        $this->refreshApplication();
     }
 
-    function getDummyImageName()
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEnvironmentSetUp($app)
     {
-        return '500px-Smiley.png';
+        // reset base path to point to our package's src directory
+        $app['path.base'] = realpath(__DIR__ . '/..');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPackageProviders($app)
+    {
+        return ['\Onigoetz\Imagecache\Support\Laravel\ImagecacheServiceProvider5'];
     }
 }
