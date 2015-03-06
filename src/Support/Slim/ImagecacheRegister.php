@@ -40,14 +40,10 @@ class ImagecacheRegister
                 }
 
                 $transfer = new Transfer($final_file);
-
                 $app->response->setStatus($transfer->getStatus());
                 $app->response->headers->replace($transfer->getHeaders());
 
-                $app->response->body(file_get_contents($final_file));
-
-                //TODO :: maybe find a way to stream with slim and be testable
-                //$transfer->stream($final_file);
+                $app->response->setBody(file_get_contents($final_file));
             }
         )
             ->conditions(array('file' => '.*'))
