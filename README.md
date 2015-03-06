@@ -1,8 +1,10 @@
 # Imagecache
-[![Build Status](http://img.shields.io/travis/onigoetz/imagecache.svg?style=flat)](https://travis-ci.org/onigoetz/imagecache)
-[![Latest Stable Version](http://img.shields.io/packagist/v/onigoetz/imagecache.svg?style=flat)](https://packagist.org/packages/onigoetz/imagecache)
-[![Total Downloads](http://img.shields.io/packagist/dt/onigoetz/imagecache.svg?style=flat)](https://packagist.org/packages/onigoetz/imagecache)
-[![Scrutinizer Quality Score](http://img.shields.io/scrutinizer/g/onigoetz/imagecache.svg?style=flat)](https://scrutinizer-ci.com/g/onigoetz/imagecache/)
+[![Latest Version](https://img.shields.io/github/release/onigoetz/imagecache.svg?style=flat-square)](https://github.com/onigoetz/imagecache/releases)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](https://github.com/onigoetz/imagecache/blob/master/LICENSE.md)
+[![Build Status](https://img.shields.io/travis/onigoetz/imagecache/master.svg?style=flat-square)](https://travis-ci.org/onigoetz/imagecache)
+[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/onigoetz/imagecache.svg?style=flat-square)](https://scrutinizer-ci.com/g/onigoetz/imagecache/code-structure)
+[![Quality Score](https://img.shields.io/scrutinizer/g/onigoetz/imagecache.svg?style=flat-square)](https://scrutinizer-ci.com/g/onigoetz/imagecache)
+[![Total Downloads](https://img.shields.io/packagist/dt/onigoetz/imagecache.svg?style=flat-square)](https://packagist.org/packages/onigoetz/imagecache)
 
 Automatically generate images at the size you need them with presets
 
@@ -40,7 +42,8 @@ For it to work you need
 ## Installation
 
 - [Raw PHP](http://github.com/onigoetz/imagecache/tree/master/docs/raw.md)
-- [Laravel Framework](http://github.com/onigoetz/imagecache/tree/master/docs/laravel.md)
+- [Laravel 4](http://github.com/onigoetz/imagecache/tree/master/docs/laravel.md)
+- [Laravel 5](http://github.com/onigoetz/imagecache/tree/master/docs/laravel5.md)
 - [Slim Framework](http://github.com/onigoetz/imagecache/tree/master/docs/slim.md)
 
 ## Preset configuration
@@ -95,11 +98,3 @@ But if you call the url `/images/cache/200x200/koala@2x.jpg` it will resolve to 
 Now the interesting thing happens : if the preset exists, it is applied. If it doesn't, it will take the `200x200` preset and double all it's values.
 
 so if in the preset `200x200` you crop your images to 200x200 pixels, it will now be a 400x400 pixels image.
-
-## Todo
-
-- add some unit tests
-- do image manipulation with Imagine and allow for greater flexibility in manipulations
-- write documentation for other frameworks
-
-

@@ -1,7 +1,7 @@
 {
     "name": "onigoetz/imagecache",
-    "description": "Image caching for everybody",
-    "keywords": ["laravel 4", "image", "automatic generation", "retina"],
+    "description": "Image manipulation & caching for everybody",
+    "keywords": ["laravel", "laravel 4", "laravel 5", "slim", "image", "automatic generation", "retina"],
     "authors": [
         {
             "name": "Stéphane Goetz",
@@ -13,7 +13,6 @@
         "imagine/imagine": "dev-master"
     },
 	"require-dev": {
-
 		"phpunit/phpunit": "*",
 		"mockery/mockery": "*",
 		"mikey179/vfsStream": "*",

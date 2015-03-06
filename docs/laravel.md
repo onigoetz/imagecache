@@ -1,10 +1,10 @@
-#Imagecache with Laravel Framework 4
+# Imagecache with Laravel 4
 
 If you've already installed a Laravel Package this will be nothing new to you.
 
 ### Dependency
 
-Add a dependency with this command : `composer require onigoetz/imagecache:dev-master`
+Add a dependency with this command : `composer require onigoetz/imagecache:1.1.*`
 
 ### Service Provider
 
