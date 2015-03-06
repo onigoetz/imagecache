@@ -4,20 +4,18 @@ php:
   - 5.4
   - 5.5
   - 5.6
+  - 7.0
   - hhvm
-  - hhvm-nightly
 
 matrix:
   allow_failures:
     - php: hhvm
-    - php: hhvm-nightly
 
 before_script:
-  - composer self-update
   - composer install --dev --no-interaction
 
 script:
-  - vendor/bin/phpunit --coverage-text
+  - vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
 
 after_script:
   - wget https://scrutinizer-ci.com/ocular.phar

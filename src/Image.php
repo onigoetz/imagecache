@@ -196,16 +196,16 @@ class Image
      */
     public function scale($width = null, $height = null)
     {
-        if ($width == null && $height == null) {
+        if ($width === null && $height === null) {
             throw new \LogicException('one of "width" or "height" must be set for "scale"');
         }
 
-        if ($width != null && $height != null) {
+        if ($width !== null && $height !== null) {
             $this->resize($width, $height);
         }
 
         $size = $this->image->getSize();
-        $size = ($width != null)? $size->widen($width) : $size->heighten($height);
+        $size = ($width !== null)? $size->widen($width) : $size->heighten($height);
 
         $this->image->resize($size);
     }
@@ -235,13 +235,10 @@ class Image
     {
         $palette = new \Imagine\Image\Palette\RGB();
 
-        if (strlen(trim($background))) {
-            $background = $palette->color($background, 0);
-        }
-
         // by default the background is transparent if supported
-        if (!$background && $palette->supportsAlpha()) {
-            $background = $palette->color('fff', 100);
+        $color = $palette->color('fff');
+        if (strlen(trim($background))) {
+            $color = $palette->color($background, 0);
         }
 
         if ($random) {
@@ -249,7 +246,7 @@ class Image
             $degrees = rand(-1 * $deg, $deg);
         }
 
-        $this->image->rotate($degrees, $background);
+        $this->image->rotate($degrees, $color);
     }
 
     /**

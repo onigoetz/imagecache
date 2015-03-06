@@ -13,15 +13,15 @@ class RawImagecacheService {
             $final_file = $imagecache->handleRequest($request['preset'], $request['file']);
         } catch (InvalidPresetException $e) {
             header('HTTP/1.0 404 Not Found');
-            echo $e->message();
+            echo $e->getMessage();
             return;
         } catch (NotFoundException $e) {
             header('HTTP/1.0 404 Not Found');
-            echo $e->message();
+            echo $e->getMessage();
             return;
         } catch (\RuntimeException $e) {
             header('HTTP/1.0 500 Internal Server Error');
-            echo $e->message();
+            echo $e->getMessage();
             return;
         }
 
