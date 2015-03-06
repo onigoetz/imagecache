@@ -16,7 +16,7 @@ before_script:
   - travis_retry composer install --no-interaction --prefer-dist --dev
 
 script:
-  - vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
+  - vendor/bin/phpunit $PHPUNIT_FLAGS
 
 # Do not send coverage for HHVM as it fucks up the count
 after_script:
