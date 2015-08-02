@@ -18,7 +18,7 @@
 		"mikey179/vfsStream": "*",
         "jenssegers/imagehash": "dev-master",
 
-        "slim/slim": "2.4.*",
+        "slim/slim": "2.*",
         "there4/slim-test-helpers": "dev-master",
 
         "illuminate/support": ">=5.0.0",
