@@ -3,7 +3,6 @@
 /**
  * An image to run through imagecache
  */
-
 namespace Onigoetz\Imagecache;
 
 use Imagine\Filter\Advanced\Grayscale;
@@ -14,20 +13,18 @@ use RuntimeException;
 
 /**
  * An image to run through imagecache
- *
- * @package Imagecache
  */
 class Image
 {
     /**
      * File source
-     * @var String
+     * @var string
      */
     public $source;
 
     /**
      * Informations about the image
-     * @var Array
+     * @var array
      */
     protected $info;
 
@@ -77,17 +74,18 @@ class Image
      * @return \Imagine\Image\ImagineInterface
      * @codeCoverageIgnore This method is linked to the system, so we can't test it correctly
      */
-    protected function getImagine() {
+    protected function getImagine()
+    {
         try {
             return new \Imagine\Gd\Imagine();
-        } catch(RuntimeException $noGd) {
+        } catch (RuntimeException $noGd) {
             try {
                 return new \Imagine\Imagick\Imagine();
-            } catch(RuntimeException $noImagick) {
+            } catch (RuntimeException $noImagick) {
                 try {
                     return new \Imagine\Gmagick\Imagine();
-                } catch(RuntimeException $noGmagick) {
-                    throw new RuntimeException("none of Gd, Imagick or Gmagick are available on this setup");
+                } catch (RuntimeException $noGmagick) {
+                    throw new RuntimeException('none of Gd, Imagick or Gmagick are available on this setup');
                 }
             }
         }
@@ -96,27 +94,30 @@ class Image
     /**
      * File's width
      *
-     * @return integer
+     * @return int
      */
-    public function getWidth(){
+    public function getWidth()
+    {
         return $this->image->getSize()->getWidth();
     }
 
     /**
      * File's height
      *
-     * @return integer
+     * @return int
      */
-    public function getHeight(){
+    public function getHeight()
+    {
         return $this->image->getSize()->getHeight();
     }
 
     /**
      * File's size
      *
-     * @return integer
+     * @return int
      */
-    public function getFileSize() {
+    public function getFileSize()
+    {
         return filesize($this->source);
     }
 
@@ -150,12 +151,12 @@ class Image
      *
      * The resulting image always has the exact target dimensions.
      *
-     * @param Integer $width The target width, in pixels.
-     * @param Integer $height The target height, in pixels.
-     *
-     * @return bool true or false, based on success.
+     * @param int $width The target width, in pixels.
+     * @param int $height The target height, in pixels.
      *
      * @throws \LogicException if the parameters are wrong
+     * @return bool true or false, based on success.
+     *
      *
      * @see resize()
      * @see crop()
@@ -187,10 +188,10 @@ class Image
      *
      * The resulting image can be smaller for one or both target dimensions.
      *
-     * @param Integer $width
+     * @param int $width
      *   The target width, in pixels. This value is omitted then the scaling will
      *   based only on the height value.
-     * @param Integer $height
+     * @param int $height
      *   The target height, in pixels. This value is omitted then the scaling will
      *   based only on the width value.
      */
@@ -205,7 +206,7 @@ class Image
         }
 
         $size = $this->image->getSize();
-        $size = ($width !== null)? $size->widen($width) : $size->heighten($height);
+        $size = ($width !== null) ? $size->widen($width) : $size->heighten($height);
 
         $this->image->resize($size);
     }
@@ -213,8 +214,8 @@ class Image
     /**
      * Resize an image to the given dimensions (ignoring aspect ratio).
      *
-     * @param Integer $width The target width, in pixels.
-     * @param Integer $height The target height, in pixels.
+     * @param int $width The target width, in pixels.
+     * @param int $height The target height, in pixels.
      *
      * @return bool true or false, based on success.
      */
@@ -242,7 +243,7 @@ class Image
         }
 
         if ($random) {
-            $deg = abs((float)$degrees);
+            $deg = abs((float) $degrees);
             $degrees = rand(-1 * $deg, $deg);
         }
 
@@ -252,18 +253,17 @@ class Image
     /**
      * Crop an image to the rectangle specified by the given rectangle.
      *
-     * @param Integer $xoffset
+     * @param int $xoffset
      *   The top left coordinate, in pixels, of the crop area (x axis value).
-     * @param Integer $yoffset
+     * @param int $yoffset
      *   The top left coordinate, in pixels, of the crop area (y axis value).
-     * @param Integer $width
+     * @param int $width
      *   The target width, in pixels.
-     * @param Integer $height
+     * @param int $height
      *   The target height, in pixels.
      *
-     * @return bool true or false, based on success.
-     *
      * @throws \LogicException if the parameters are wrong
+     * @return bool true or false, based on success.
      */
     public function crop($xoffset, $yoffset, $width, $height)
     {
@@ -301,8 +301,8 @@ class Image
      * Close the image and save the changes to a file.
      *
      * @param  string|null $destination Destination path where the image should be saved. If it is empty the original image file will be overwritten.
-     * @return Image  image or false, based on success.
      * @throws \RuntimeException
+     * @return Image  image or false, based on success.
      */
     public function save($destination = null)
     {
@@ -317,6 +317,6 @@ class Image
 
         chmod($destination, 0644);
 
-        return new Image($destination);
+        return new self($destination);
     }
 }

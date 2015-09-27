@@ -5,15 +5,14 @@
  * Date: 12.09.14
  * Time: 15:40
  */
-
 namespace Onigoetz\Imagecache\Support;
 
 use ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
 use There4\Slim\Test\WebTestClient;
 
-class SlimTest extends ImagecacheTestCase {
-
+class SlimTest extends ImagecacheTestCase
+{
     /**
      * @var \Slim\Slim
      */
@@ -24,16 +23,16 @@ class SlimTest extends ImagecacheTestCase {
      */
     protected $client;
 
-    protected $presets = array(
+    protected $presets = [
         'path_images' => 'images',
         'path_images_root' => '',
         'path_cache' => 'cache',
-        'presets' => array(
-            '40X40' => array( //exact size
-                array('action' => 'scale_and_crop', 'width' => 40, 'height' => 40)
-            ),
-        )
-    );
+        'presets' => [
+            '40X40' => [ //exact size
+                ['action' => 'scale_and_crop', 'width' => 40, 'height' => 40],
+            ],
+        ],
+    ];
 
     // Run for each unit test to setup our slim app environment
     public function setup()
@@ -45,12 +44,13 @@ class SlimTest extends ImagecacheTestCase {
 
     // Instantiate a Slim application for use in our testing environment. You
     // will most likely override this for your own application.
-    public function getSlimInstance() {
-        $instance = new \Slim\Slim(array(
+    public function getSlimInstance()
+    {
+        $instance = new \Slim\Slim([
             'version' => '0.0.0',
             'debug'   => false,
-            'mode'    => 'testing'
-        ));
+            'mode'    => 'testing',
+        ]);
 
         $this->getImageFolder();
         $this->presets['path_images_root'] = vfsStream::url('root');
@@ -115,7 +115,7 @@ class SlimTest extends ImagecacheTestCase {
     {
         $image = $this->getDummyImageName();
 
-        file_put_contents($this->presets['path_images_root'] . "/" . $this->presets['path_images'] . "/$image", "oxo");
+        file_put_contents($this->presets['path_images_root'] . '/' . $this->presets['path_images'] . "/$image", 'oxo');
 
         $file = "/{$this->presets['path_images']}/{$this->presets['path_cache']}/40X40/$image";
 

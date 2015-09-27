@@ -3,17 +3,13 @@
 /**
  * Image Manager
  */
-
 namespace Onigoetz\Imagecache;
-
-use ReflectionMethod;
 
 /**
  * Image manager
  *
  * Prepares the images for the cache
  *
- * @package Imagecache
  *
  * @author Stéphane Goetz
  */
@@ -31,7 +27,7 @@ class Manager
 
     public function __construct($options)
     {
-        $this->options = $options + array('path_images' => 'images', 'path_cache' => 'cache');
+        $this->options = $options + ['path_images' => 'images', 'path_cache' => 'cache'];
     }
 
     /**
@@ -44,7 +40,6 @@ class Manager
         }
 
         return $this->methodCaller;
-
     }
 
     /**
@@ -88,12 +83,12 @@ class Manager
             }
         }
 
-        return array($preset, $preset_key, $file);
+        return [$preset, $preset_key, $file];
     }
 
     protected function generateRetinaAction($action)
     {
-        foreach (array('width', 'height', 'xoffset', 'yoffset') as $option) {
+        foreach (['width', 'height', 'xoffset', 'yoffset'] as $option) {
             if (array_key_exists($option, $action) && is_numeric($action[$option])) {
                 $action[$option] *= 2;
             }
@@ -107,10 +102,10 @@ class Manager
      *
      * @param $preset_key string
      * @param $file string
-     * @return string
      * @throws Exceptions\InvalidPresetException
      * @throws Exceptions\NotFoundException
      * @throws \RuntimeException
+     * @return string
      */
     public function handleRequest($preset_key, $file)
     {
@@ -170,8 +165,8 @@ class Manager
      * @param array $actions An image preset array.
      * @param Image $image Path of the source file.
      * @param string $dst Path of the destination file.
-     * @return Image
      * @throws \RuntimeException
+     * @return Image
      */
     protected function buildImage($actions, Image $image, $dst)
     {

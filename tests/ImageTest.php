@@ -10,7 +10,7 @@ use org\bovigo\vfs\vfsStream;
 
 class ImageTest extends ImagecacheTestCase
 {
-    function getImage()
+    public function getImage()
     {
         $this->getImageFolder();
         $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
@@ -21,7 +21,7 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @expectedException \Onigoetz\Imagecache\Exceptions\NotFoundException
      */
-    function testFileNotFound()
+    public function testFileNotFound()
     {
         $this->assertFalse(new Image('/this/file/doesnt_exist'));
     }
@@ -29,7 +29,7 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @expectedException \LogicException
      */
-    function testScale_and_cropNeedsWidth()
+    public function testScale_and_cropNeedsWidth()
     {
         $image = $this->getImage();
 
@@ -39,14 +39,15 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @expectedException \LogicException
      */
-    function testScale_and_cropNeedsHeight()
+    public function testScale_and_cropNeedsHeight()
     {
         $image = $this->getImage();
 
         $image->scale_and_crop(300, null);
     }
 
-    function providerScaleAndCrop() {
+    public function providerScaleAndCrop()
+    {
         return [
             [new Box(300, 200), new Box(100, 100), new Box(150, 100), new Point(25, 0)],
             [new Box(252, 150), new Box(100, 100), new Box(168, 100), new Point(34, 0)],
@@ -58,23 +59,26 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @dataProvider providerScaleAndCrop
      */
-    function testScale_and_cropResize($originalImageSize, $resizeDestination, $scaled, $position)
+    public function testScale_and_cropResize($originalImageSize, $resizeDestination, $scaled, $position)
     {
         $image = $this->getImage();
         $image->setImage($mockedImage = m::mock($image->getImage()));
 
-        $scaledMatcher = function(BoxInterface $size) use ($scaled) {
+        $scaledMatcher = function (BoxInterface $size) use ($scaled) {
             $this->assertEquals(strval($scaled), strval($size));
+
             return strval($size) == strval($scaled);
         };
 
-        $resizeMatcher = function(BoxInterface $size) use ($resizeDestination) {
+        $resizeMatcher = function (BoxInterface $size) use ($resizeDestination) {
             $this->assertEquals(strval($resizeDestination), strval($size));
+
             return strval($resizeDestination) == strval($size);
         };
 
-        $pointMatcher = function(PointInterface $point) use ($position) {
+        $pointMatcher = function (PointInterface $point) use ($position) {
             $this->assertEquals(strval($position), strval($point));
+
             return strval($position) == strval($point);
         };
 
@@ -85,12 +89,12 @@ class ImageTest extends ImagecacheTestCase
         $image->scale_and_crop($resizeDestination->getWidth(), $resizeDestination->getHeight());
     }
 
-    function testRotateRandom()
+    public function testRotateRandom()
     {
         $variation = 20;
 
-        $matcher = function($val) use ($variation) {
-            return ($val >= ($variation*-1) && $val <= $variation);
+        $matcher = function ($val) use ($variation) {
+            return ($val >= ($variation * -1) && $val <= $variation);
         };
 
         $image = $this->getImage();
@@ -104,7 +108,7 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @expectedException \LogicException
      */
-    function testCropNeedsWidth()
+    public function testCropNeedsWidth()
     {
         $image = $this->getImage();
 
@@ -114,7 +118,7 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @expectedException \LogicException
      */
-    function testCropNeedsHeight()
+    public function testCropNeedsHeight()
     {
         $image = $this->getImage();
 
@@ -124,7 +128,7 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @expectedException \LogicException
      */
-    function testCropNeedsXOffset()
+    public function testCropNeedsXOffset()
     {
         $image = $this->getImage();
 
@@ -134,14 +138,14 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @expectedException \LogicException
      */
-    function testCropNeedsYOffset()
+    public function testCropNeedsYOffset()
     {
         $image = $this->getImage();
 
         $image->crop(0, null, 300, 300);
     }
 
-    function testSave()
+    public function testSave()
     {
         $image = $this->getImage();
         $final_file = vfsStream::url('root/images') . '/test-save.png';
@@ -151,7 +155,7 @@ class ImageTest extends ImagecacheTestCase
         $this->assertTrue(file_exists($final_file));
     }
 
-    function testGetInfo()
+    public function testGetInfo()
     {
         $this->getImageFolder();
         $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
@@ -164,7 +168,7 @@ class ImageTest extends ImagecacheTestCase
         );
     }
 
-    function testSaveInPlace()
+    public function testSaveInPlace()
     {
         $image = $this->getImage();
 
@@ -179,7 +183,7 @@ class ImageTest extends ImagecacheTestCase
     /**
      * @expectedException \RuntimeException
      */
-    function testSaveFail()
+    public function testSaveFail()
     {
         $image = $this->getImage();
         $image->setImage($mockedImage = m::mock($image->getImage()));
@@ -189,5 +193,3 @@ class ImageTest extends ImagecacheTestCase
         $image->save();
     }
 }
-
-

@@ -1,14 +1,13 @@
 <?php
 
-use Mockery as m;
+use Jenssegers\ImageHash\ImageHash;
+use Jenssegers\ImageHash\Implementations\DifferenceHash;
 use Onigoetz\Imagecache\Image;
 use org\bovigo\vfs\vfsStream;
-use Jenssegers\ImageHash\Implementations\DifferenceHash;
-use Jenssegers\ImageHash\ImageHash;
 
 class ImageIntegrationTest extends ImagecacheTestCase
 {
-    function setAccessible($methodName)
+    public function setAccessible($methodName)
     {
         $method = new ReflectionMethod('Onigoetz\Imagecache\Manager', $methodName);
         $method->setAccessible(true);
@@ -16,97 +15,97 @@ class ImageIntegrationTest extends ImagecacheTestCase
         return $method;
     }
 
-    function providerImageGenerator()
+    public function providerImageGenerator()
     {
-        return array(
-            array(
-                array(
-                    array('action' => 'scale_and_crop', 'width' => 40, 'height' => 30),
-                ),
-                'scale_and_crop-40-30.png'
-            ),
-            array(
-                array(
-                    array('action' => 'scale_and_crop', 'width' => 60, 'height' => 60),
-                ),
-                'scale_and_crop-60-60.png'
-            ),
-            array(
-                array(
-                    array('action' => 'scale', 'width' => 40),
-                ),
-                'scale-40-__.png'
-            ),
-            array(
-                array(
-                    array('action' => 'scale', 'width' => 600),
-                ),
-                'scale-600.png'
-            ),
-            array(
-                array(
-                    array('action' => 'scale', 'height' => 60),
-                ),
-                'scale-__-60.png'
-            ),
-            array(
-                array(
-                    array('action' => 'scale', 'height' => 60, 'width' => 60),
-                ),
-                'scale-60-60.png'
-            ),
-            array(
-                array(
-                    array('action' => 'resize', 'width' => 40, 'height' => 40),
-                ),
-                'resize-40-40.png'
-            ),
-            array(
-                array(
-                    array('action' => 'rotate', 'degrees' => 90),
-                ),
+        return [
+            [
+                [
+                    ['action' => 'scale_and_crop', 'width' => 40, 'height' => 30],
+                ],
+                'scale_and_crop-40-30.png',
+            ],
+            [
+                [
+                    ['action' => 'scale_and_crop', 'width' => 60, 'height' => 60],
+                ],
+                'scale_and_crop-60-60.png',
+            ],
+            [
+                [
+                    ['action' => 'scale', 'width' => 40],
+                ],
+                'scale-40-__.png',
+            ],
+            [
+                [
+                    ['action' => 'scale', 'width' => 600],
+                ],
+                'scale-600.png',
+            ],
+            [
+                [
+                    ['action' => 'scale', 'height' => 60],
+                ],
+                'scale-__-60.png',
+            ],
+            [
+                [
+                    ['action' => 'scale', 'height' => 60, 'width' => 60],
+                ],
+                'scale-60-60.png',
+            ],
+            [
+                [
+                    ['action' => 'resize', 'width' => 40, 'height' => 40],
+                ],
+                'resize-40-40.png',
+            ],
+            [
+                [
+                    ['action' => 'rotate', 'degrees' => 90],
+                ],
                 'rotate-90.png',
-                '5.5'
-            ),
-            array(
-                array(
-                    array('action' => 'rotate', 'degrees' => 60, 'background' => '#FF0000'),
-                ),
+                '5.5',
+            ],
+            [
+                [
+                    ['action' => 'rotate', 'degrees' => 60, 'background' => '#FF0000'],
+                ],
                 'rotate-60-F00.png',
-                '5.5'
-            ),
-            array(
-                array(
-                    array('action' => 'crop', 'width' => 40, 'height' => 30, 'xoffset' => 90, 'yoffset' => 80),
-                ),
-                'crop-40-30-90-80.png'
-            ),
-            array(
-                array(
-                    array('action' => 'crop', 'width' => 40, 'height' => 25, 'xoffset' => 90, 'yoffset' => 80),
-                ),
-                'crop-40-25-90-80.png'
-            ),
-            array(
-                array(
-                    array('action' => 'crop', 'width' => 50, 'height' => 30, 'xoffset' => 120, 'yoffset' => 100),
-                ),
-                'crop-50-30-120-100.png'
-            ),
-            array(
-                array(
-                    array('action' => 'resize', 'width' => 80, 'height' => 80), //resize for processing speed
-                    array('action' => 'desaturate'),
-                ),
-                'desaturate.png'
-            )
-        );
+                '5.5',
+            ],
+            [
+                [
+                    ['action' => 'crop', 'width' => 40, 'height' => 30, 'xoffset' => 90, 'yoffset' => 80],
+                ],
+                'crop-40-30-90-80.png',
+            ],
+            [
+                [
+                    ['action' => 'crop', 'width' => 40, 'height' => 25, 'xoffset' => 90, 'yoffset' => 80],
+                ],
+                'crop-40-25-90-80.png',
+            ],
+            [
+                [
+                    ['action' => 'crop', 'width' => 50, 'height' => 30, 'xoffset' => 120, 'yoffset' => 100],
+                ],
+                'crop-50-30-120-100.png',
+            ],
+            [
+                [
+                    ['action' => 'resize', 'width' => 80, 'height' => 80], //resize for processing speed
+                    ['action' => 'desaturate'],
+                ],
+                'desaturate.png',
+            ],
+        ];
     }
 
     /**
      * @dataProvider providerImageGenerator
      */
-    function testGenerateImage($preset, $generated, $requires = null)
+    public function testGenerateImage($preset, $generated, $requires = null)
     {
         if ($requires && version_compare(PHP_VERSION, $requires, '<')) {
             $this->markTestSkipped('PHP %s (or later) is required.', $requires);
@@ -133,14 +132,14 @@ class ImageIntegrationTest extends ImagecacheTestCase
         $this->assertLessThan(3, $hasher->compare($final_file, $final_file_compared));
     }
 
-    function providerFailedImageGenerator()
+    public function providerFailedImageGenerator()
     {
         return [
             [
                 [
                     ['action' => 'scale'],
                 ],
-                'You should at least provide width or height'
+                'You should at least provide width or height',
             ],
         ];
     }
@@ -149,7 +148,7 @@ class ImageIntegrationTest extends ImagecacheTestCase
      * @dataProvider providerFailedImageGenerator
      * @expectedException \LogicException
      */
-    function testFailGenerateImage($preset)
+    public function testFailGenerateImage($preset)
     {
         $manager = $this->getManager();
         $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
