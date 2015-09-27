@@ -1,7 +1,7 @@
 <?php namespace Onigoetz\Imagecache\Support\Laravel;
 
-class ImagecacheServiceProvider5 extends ImagecacheServiceProvider {
-
+class ImagecacheServiceProvider5 extends ImagecacheServiceProvider
+{
     /**
      * Add the namespace to config
      */

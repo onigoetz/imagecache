@@ -4,8 +4,8 @@ use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
 use Onigoetz\Imagecache\Exceptions\NotFoundException;
 use Onigoetz\Imagecache\Manager;
 use Onigoetz\Imagecache\Transfer;
-use Slim\Slim;
 use RuntimeException;
+use Slim\Slim;
 
 class ImagecacheRegister
 {
@@ -28,14 +28,17 @@ class ImagecacheRegister
                 } catch (InvalidPresetException $e) {
                     $app->response->setStatus(404);
                     $app->response->body($e->getMessage());
+
                     return;
                 } catch (NotFoundException $e) {
                     $app->response->setStatus(404);
                     $app->response->body($e->getMessage());
+
                     return;
                 } catch (RuntimeException $e) {
                     $app->response->setStatus(500);
                     $app->response->body($e->getMessage());
+
                     return;
                 }
 
@@ -46,7 +49,7 @@ class ImagecacheRegister
                 $app->response->setBody(file_get_contents($final_file));
             }
         )
-            ->conditions(array('file' => '.*'))
+            ->conditions(['file' => '.*'])
             ->name('onigoetz.imagecache');
     }
 }

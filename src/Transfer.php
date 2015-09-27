@@ -3,7 +3,6 @@
 /**
  * Image Manager
  */
-
 namespace Onigoetz\Imagecache;
 
 /**
@@ -11,7 +10,6 @@ namespace Onigoetz\Imagecache;
  *
  * Prepares the images for the cache
  *
- * @package Imagecache
  *
  * @author Stéphane Goetz
  */
@@ -22,17 +20,20 @@ class Transfer
     protected $headers = [];
     protected $status = 200;
 
-    public function __construct($path) {
+    public function __construct($path)
+    {
         $this->path = $path;
 
         $this->getTransferInformations();
     }
 
-    public function getHeaders() {
+    public function getHeaders()
+    {
         return $this->headers;
     }
 
-    public function getFormattedHeaders() {
+    public function getFormattedHeaders()
+    {
         $headers = [];
 
         foreach ($this->headers as $name => $value) {
@@ -42,7 +43,8 @@ class Transfer
         return $headers;
     }
 
-    public function getStatus() {
+    public function getStatus()
+    {
         return $this->status;
     }
 

@@ -5,13 +5,12 @@
  * Date: 15.08.14
  * Time: 15:17
  */
-
 namespace Onigoetz\Imagecache;
-
 
 use ReflectionMethod;
 
-class MethodCaller {
+class MethodCaller
+{
     public function call($object, $method, $args)
     {
         if (!method_exists($object, $method)) {
@@ -21,7 +20,7 @@ class MethodCaller {
         $reflected = new ReflectionMethod(get_class($object), $method);
         $parameters = $reflected->getParameters();
 
-        $arguments = array();
+        $arguments = [];
         foreach ($parameters as $param) {
             if (array_key_exists($param->name, $args)) {
                 $arguments[$param->name] = $args[$param->name];
@@ -30,6 +29,6 @@ class MethodCaller {
             }
         }
 
-        return call_user_func_array(array($object, $method), $arguments);
+        return call_user_func_array([$object, $method], $arguments);
     }
 }

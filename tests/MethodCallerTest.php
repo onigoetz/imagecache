@@ -2,13 +2,12 @@
 
 use Mockery as m;
 use Onigoetz\Imagecache\Image;
-use Onigoetz\Imagecache\Manager;
 use Onigoetz\Imagecache\MethodCaller;
 use org\bovigo\vfs\vfsStream;
 
 class MethodCallerTest extends ImagecacheTestCase
 {
-    function getImage()
+    public function getImage()
     {
         return new Image(vfsStream::url('root/images') . '/' . $this->getDummyImageName());
     }
@@ -16,7 +15,7 @@ class MethodCallerTest extends ImagecacheTestCase
     /**
      * @covers Onigoetz\Imagecache\MethodCaller::call
      */
-    function testCallReorderArgs()
+    public function testCallReorderArgs()
     {
         $config = ['height' => 100, 'width' => 200];
 
@@ -30,7 +29,7 @@ class MethodCallerTest extends ImagecacheTestCase
      * @expectedException \LogicException
      * @covers Onigoetz\Imagecache\MethodCaller::call
      */
-    function testCallMethodDoesntExist()
+    public function testCallMethodDoesntExist()
     {
         (new MethodCaller)->call($this->getImage(), 'foo', []);
     }
@@ -38,7 +37,7 @@ class MethodCallerTest extends ImagecacheTestCase
     /**
      * @covers Onigoetz\Imagecache\MethodCaller::call
      */
-    function testCallFindsDefaultArgs()
+    public function testCallFindsDefaultArgs()
     {
         $config = ['degrees' => 90];
 
