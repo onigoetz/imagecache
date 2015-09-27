@@ -3,18 +3,18 @@
 use Laravel5TestCase;
 use org\bovigo\vfs\vfsStream;
 
-class Laravel5Test extends Laravel5TestCase {
-
-    protected $presets = array(
+class Laravel5Test extends Laravel5TestCase
+{
+    protected $presets = [
         'path_images' => 'images',
         'path_images_root' => '',
         'path_cache' => 'cache',
-        'presets' => array(
-            '40X40' => array( //exact size
-                array('action' => 'scale_and_crop', 'width' => 40, 'height' => 40)
-            ),
-        )
-    );
+        'presets' => [
+            '40X40' => [ //exact size
+                ['action' => 'scale_and_crop', 'width' => 40, 'height' => 40],
+            ],
+        ],
+    ];
 
     public function setUp()
     {
@@ -83,7 +83,7 @@ class Laravel5Test extends Laravel5TestCase {
     {
         $image = $this->getDummyImageName();
 
-        file_put_contents($this->presets['path_images_root'] . "/" . $this->presets['path_images'] . "/$image", "oxo");
+        file_put_contents($this->presets['path_images_root'] . '/' . $this->presets['path_images'] . "/$image", 'oxo');
 
         $file = "/{$this->presets['path_images']}/{$this->presets['path_cache']}/40X40/$image";
 

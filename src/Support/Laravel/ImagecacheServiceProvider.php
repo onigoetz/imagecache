@@ -1,16 +1,13 @@
 <?php namespace Onigoetz\Imagecache\Support\Laravel;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
 use Onigoetz\Imagecache\Exceptions\NotFoundException;
 use Onigoetz\Imagecache\Manager;
 use Onigoetz\Imagecache\Transfer;
-use Symfony\Component\HttpFoundation\Response;
 
 class ImagecacheServiceProvider extends ServiceProvider
 {
-
     /**
      * Add the namespace to config
      */
@@ -82,9 +79,3 @@ class ImagecacheServiceProvider extends ServiceProvider
         $this->registerRoute();
     }
 }
-
-
-
-
-
-

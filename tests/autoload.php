@@ -6,23 +6,24 @@ use Mockery as m;
 use Onigoetz\Imagecache\Manager;
 use org\bovigo\vfs\vfsStream;
 
-trait ImagecacheTestTrait {
-
+trait ImagecacheTestTrait
+{
     /**
      * @var \org\bovigo\vfs\vfsStreamDirectory
      */
     protected $vfsRoot;
 
-    function getDummyImageName()
+    public function getDummyImageName()
     {
         return '500px-Smiley.png';
     }
 
-    function getImageFolder()
+    public function getImageFolder()
     {
         $this->vfsRoot = vfsStream::setup('root');
         mkdir(vfsStream::url('root') . '/images');
         vfsStream::copyFromFileSystem(__DIR__ . '/Fixtures/source', $this->vfsRoot->getChild('images'));
+
         return vfsStream::url('root');
     }
 }
@@ -39,20 +40,20 @@ abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
         m::close();
     }
 
-    function getManager($options = array())
+    public function getManager($options = [])
     {
         //Add default option
-        $options += array('path_images_root' => $this->getImageFolder());
+        $options += ['path_images_root' => $this->getImageFolder()];
 
         return new Manager($options);
     }
 
-    function getMockedManager($options = array())
+    public function getMockedManager($options = [])
     {
         //Add default option
-        $options += array('path_images_root' => $this->getImageFolder());
+        $options += ['path_images_root' => $this->getImageFolder()];
 
-        return m::mock('Onigoetz\Imagecache\Manager', array($options))
+        return m::mock('Onigoetz\Imagecache\Manager', [$options])
             ->shouldAllowMockingProtectedMethods()
             ->makePartial();
     }
@@ -67,7 +68,7 @@ class Laravel5TestCase extends \Orchestra\Testbench\TestCase
      */
     public function setUp()
     {
-        if (! $this->app) {
+        if (!$this->app) {
             $this->refreshApplication();
         }
 
