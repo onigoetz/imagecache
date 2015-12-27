@@ -1,33 +1,30 @@
 {
-    "name": "onigoetz/imagecache",
-    "description": "Image manipulation & caching for everybody",
-    "keywords": ["laravel", "laravel 4", "laravel 5", "slim", "image", "automatic generation", "retina"],
-    "authors": [
-        {
-            "name": "Stéphane Goetz",
-            "email": "onigoetz@onigoetz.ch"
-        }
-    ],
-    "require": {
-        "php": ">=5.5.0",
-        "imagine/imagine": ">=0.6.3"
-    },
-	"require-dev": {
-        "phpunit/phpunit": "*",
-        "mockery/mockery": ">=0.9.0",
-                "mikey179/vfsStream": ">=1.6.1",
-        "jenssegers/imagehash": ">=0.3.0",
-
-        "slim/slim": "2.*",
-        "there4/slim-test-helpers": ">=0.9.4",
-
-        "orchestra/testbench": ">=3.2.0"
-	},
-    "autoload": {
-        "psr-4": {
-            "Onigoetz\\Imagecache\\": "src/"
-        }
-    },
-    "minimum-stability": "dev",
-	"prefer-stable": true
+  "name": "onigoetz/imagecache",
+  "description": "Image manipulation & caching for everybody",
+  "keywords": ["laravel", "laravel 4", "laravel 5", "slim", "image", "automatic generation", "retina" ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Stéphane Goetz",
+      "email": "onigoetz@onigoetz.ch"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.0",
+    "imagine/imagine": ">=0.6.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*",
+    "mockery/mockery": ">=0.9.0",
+    "mikey179/vfsStream": ">=1.6.1",
+    "jenssegers/imagehash": ">=0.3.0",
+    "slim/slim": "2.*",
+    "there4/slim-test-helpers": ">=0.9.4",
+    "orchestra/testbench": ">=3.2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Onigoetz\\Imagecache\\": "src/"
+    }
+  }
 }
