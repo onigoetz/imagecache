@@ -94,7 +94,7 @@ class ImageTest extends ImagecacheTestCase
         $variation = 20;
 
         $matcher = function ($val) use ($variation) {
-            return ($val >= ($variation * -1) && $val <= $variation);
+            return $val >= ($variation * -1) && $val <= $variation;
         };
 
         $image = $this->getImage();

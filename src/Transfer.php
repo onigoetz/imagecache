@@ -73,7 +73,7 @@ class Transfer
         // Transfer file in 1024 byte chunks to save memory usage.
         if ($fd = fopen($this->path, 'rb')) {
             while (!feof($fd)) {
-                print fread($fd, 1024);
+                echo fread($fd, 1024);
             }
             fclose($fd);
         }
