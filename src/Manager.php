@@ -83,7 +83,7 @@ class Manager
             }
         }
 
-        return [$preset, $preset_key, $file];
+        return [$preset, $file];
     }
 
     protected function generateRetinaAction($action)
@@ -110,9 +110,9 @@ class Manager
     public function handleRequest($preset_key, $file)
     {
         //do it at the beginning for early validation
-        list($preset, $preset_key, $file) = $this->getPresetActions($preset_key, $file);
+        list($preset, $source_file) = $this->getPresetActions($preset_key, $file);
 
-        $original_file = $this->options['path_images_root'] . '/' . $this->imageUrl($file);
+        $original_file = $this->options['path_images_root'] . '/' . $this->imageUrl($source_file);
         if (!is_file($original_file)) {
             throw new Exceptions\NotFoundException('File not found');
         }

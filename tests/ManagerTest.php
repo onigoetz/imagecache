@@ -71,14 +71,13 @@ class ManagerTest extends ImagecacheTestCase
 
         $manager = $this->getManager(['presets' => ['200X@2x' => $original_preset, '200X' => []]]);
 
-        list($resolved_preset, $resolved_key, $resolved_file) = $this->setAccessible('getPresetActions')->invoke(
+        list($resolved_preset, $resolved_file) = $this->setAccessible('getPresetActions')->invoke(
             $manager,
             $original_preset_key,
             $original_file
         );
 
         $this->assertEquals($original_preset, $resolved_preset);
-        $this->assertEquals('200X@2x', $resolved_key);
         $this->assertEquals('file.jpg', $resolved_file);
     }
 
@@ -142,14 +141,13 @@ class ManagerTest extends ImagecacheTestCase
 
         $manager = $this->getManager(['presets' => ['200X' => $original_preset]]);
 
-        list($resolved_preset, $resolved_key, $resolved_file) = $this->setAccessible('getPresetActions')->invoke(
+        list($resolved_preset, $resolved_file) = $this->setAccessible('getPresetActions')->invoke(
             $manager,
             $original_preset_key,
             $original_file
         );
 
         $this->assertEquals($generated_preset, $resolved_preset);
-        $this->assertEquals('200X@2x', $resolved_key);
         $this->assertEquals('file.jpg', $resolved_file);
     }
 
