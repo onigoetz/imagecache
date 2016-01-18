@@ -12,51 +12,49 @@ __Works with any framework__
 
 ## How it works
 
-let's say your images are in the `/images` web folder. you want to have thumbnails of 200x200 pixels.
+Provided your images folder is `images`, your cache folder is `cache` and you have a preset called `200x200`
 
-You create a preset named `200x200` and configure it to scale images to 200x200 pixels
+When you call the url `/images/cache/200x200/image.jpg` and the file doesn't exist it will automatically take the file `images/image.jpg`, apply the preset to it, return it to the client and save it at the request's path to serve it from the webserver the next time.
 
-At this point, you're ready to use the module
+Here is the folder structure:
+```
+images
+├── image.jpg          // Original image
+└── cache
+    └── 200x200 
+        └── image.jpg  // Generated image using the `200x200` preset
+```
 
-call the url `/images/cache/200x200/your_image.jpg` and on the web server it will:
-
-- check for the existence of `/images/cache/200x200/your_image.jpg`
-  - if it exists:
-    - return it
-  - if not:
-    - take the image `/images/your_image.jpg`
-    - apply the `200x200` presets to it
-    - write it to disk at `/images/cache/200x200/your_image.jpg`
-    - return it to the browser
-
-You've probably guessed it, the URL is constructed as follows :
+An url to a cached image is built as follows :
 
 `/<image folder>/<cache folder>/<preset name>/<file name>`
+
+Image files can be in sub-folders, for example  `images/avatars/me.jpg` will have this url with a `40x40` preset : `images/cache/40x40/avatars/me.jpg`
 
 ## Prerequisites
 For it to work you need
 
-- PHP 5.3
+- PHP 5.5
 - Clean urls with apache url_rewrite or nginx rewrites
 
 ## Installation
 
-- [Raw PHP](http://github.com/onigoetz/imagecache/tree/master/docs/raw.md)
-- [Laravel 4](http://github.com/onigoetz/imagecache/tree/master/docs/laravel.md)
 - [Laravel 5](http://github.com/onigoetz/imagecache/tree/master/docs/laravel5.md)
+- [Laravel 4](http://github.com/onigoetz/imagecache/tree/master/docs/laravel.md)
 - [Slim Framework](http://github.com/onigoetz/imagecache/tree/master/docs/slim.md)
+- [Raw PHP](http://github.com/onigoetz/imagecache/tree/master/docs/raw.md)
 
 ## Preset configuration
 
 The most important part of the module, the presets.
 
-They're made of a a key with an array of "actions" to apply
+They're made of a a key with an array of actions to apply.
 
-You can put any key you want as long as it works in a URL.
+The key is the name of the preset you will use in the URL.
 
-However a recommendation is to put the size of the final image in the preset name,
-this allows for much more reusability in your presets. because if you create a rule named "thumbnails"
-and that your layout changes the sizes of your thumbnails but only in some places, you'll soon end in a mess with the preset names
+> My recommendation is to put the size of the final image in the preset name,
+> this allows for much more reusability in your presets. Because if you create a rule named "thumbnails"
+> and that your layout changes the sizes of your thumbnails but only in some places, you'll soon end in a mess with the preset names
 
 __Preset structure__
 
@@ -74,13 +72,13 @@ __Action structure__
 ### Example
 
 	'presets' => array(
-	    '40X40' => array( //exact size
+	    '40X40' => array(   // Exact size
 	        array('action' => 'scale_and_crop', 'width' => 40, 'height' => 40)
 	    ),
-	    'X85' => array( //fixed height
+	    'X85' => array(     // Fixed height
 	        array('action' => 'scale', 'height' => 85)
 	    ),
-	    '60X200' => array( //scale to fit inside
+	    '60X200' => array(  // Scale to fit inside
 	        array('action' => 'scale', 'height' => 200, 'width' => 60)
 	    ),
 	)
@@ -91,10 +89,10 @@ This package also helps to generate image for retina displays. there are two way
 
 with plugins like [retina.js](http://retinajs.com/) the page will automatically try urls with __@2x__ at the end.
 
-so when a normal image's url is `/images/cache/200x200/koala.jpg` it will resolve to : `preset = 200x200` and `file = koala.jpg`.
+so when a normal image's url is `/images/cache/200x200/koala.jpg` it will resolve to the original file `koala.jpg`.
 
-But if you call the url `/images/cache/200x200/koala@2x.jpg` it will resolve to : `preset = 200x200@2x` and `file = koala.jpg`.
+But if you call the url `/images/cache/200x200/koala@2x.jpg` it will also resolve to the file `koala.jpg`.
 
-Now the interesting thing happens : if the preset exists, it is applied. If it doesn't, it will take the `200x200` preset and double all it's values.
+This will take the `200x200` preset and double all it's values, so if you crop your images to 200x200 pixels, it will now be a 400x400 pixels image.
 
-so if in the preset `200x200` you crop your images to 200x200 pixels, it will now be a 400x400 pixels image.
+And it will save it back to `images/cache/200x200/koala@2x.jpg` so the webserver will be able to serve it on next visit.
