@@ -4,7 +4,7 @@ If you've already installed a Laravel Package this will be nothing new to you.
 
 ### Dependency
 
-Add a dependency with this command : `composer require onigoetz/imagecache:1.1.*`
+Add a dependency with this command : `composer require onigoetz/imagecache`
 
 ### Service Provider
 

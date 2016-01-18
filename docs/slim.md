@@ -2,7 +2,7 @@
 
 ## Composer
 
-Add a dependency with this command : `composer require onigoetz/imagecache:1.1.*`
+Add a dependency with this command : `composer require onigoetz/imagecache`
 
 ## Creating a configuration
 
