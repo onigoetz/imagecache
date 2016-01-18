@@ -58,7 +58,7 @@ class ManagerTest extends ImagecacheTestCase
 
         $manager = $this->getManager(['presets' => ['200X' => $preset]]);
 
-        list($resolved_presets) = $this->setAccessible('getPresetActions')->invoke($manager, '200X', 'file.jpg');
+        $resolved_presets = $this->setAccessible('getPresetActions')->invoke($manager, '200X', 'file.jpg');
 
         $this->assertEquals($preset, $resolved_presets);
     }
@@ -71,14 +71,13 @@ class ManagerTest extends ImagecacheTestCase
 
         $manager = $this->getManager(['presets' => ['200X@2x' => $original_preset, '200X' => []]]);
 
-        list($resolved_preset, $resolved_file) = $this->setAccessible('getPresetActions')->invoke(
+        $resolved_preset = $this->setAccessible('getPresetActions')->invoke(
             $manager,
             $original_preset_key,
             $original_file
         );
 
         $this->assertEquals($original_preset, $resolved_preset);
-        $this->assertEquals('file.jpg', $resolved_file);
     }
 
     public function providerRetinaGenerator()
@@ -141,14 +140,13 @@ class ManagerTest extends ImagecacheTestCase
 
         $manager = $this->getManager(['presets' => ['200X' => $original_preset]]);
 
-        list($resolved_preset, $resolved_file) = $this->setAccessible('getPresetActions')->invoke(
+        $resolved_preset = $this->setAccessible('getPresetActions')->invoke(
             $manager,
             $original_preset_key,
             $original_file
         );
 
         $this->assertEquals($generated_preset, $resolved_preset);
-        $this->assertEquals('file.jpg', $resolved_file);
     }
 
     public function testLoadImage()
@@ -339,6 +337,47 @@ class ManagerTest extends ImagecacheTestCase
         $caller->shouldReceive('call')->with($image, $entry['action'], $calculated)->andReturn(true);
 
         $this->assertInstanceOf('\Onigoetz\Imagecache\Image', $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
+    }
+
+    public function providerIsRetina()
+    {
+        return [
+            [true, 'image@2x.jpg'],
+            [false, 'image.new.jpg'],
+            [true, 'image.new@2x.jpg'],
+        ];
+    }
+
+
+    /**
+     * @dataProvider providerIsRetina
+     * @covers       Onigoetz\Imagecache\Manager::isRetina
+     */
+    public function testIsRetina($expected, $file)
+    {
+        $this->assertEquals($expected, $this->getManager()->isRetina($file));
+    }
+
+    public function providerGetOriginalFilename()
+    {
+        return [
+            ['image.jpg', 'image@2x.jpg'],
+            ['image.new.jpg', 'image.new.jpg'],
+            ['image.new.jpg', 'image.new@2x.jpg'],
+            ['DSC_0901.png', 'DSC_0901.png'],
+            ['picture.png', 'picture@2x.png'],
+            ['new_image.test.webp', 'new_image.test@2x.webp'],
+            ['new_image.test.webp', 'new_image.test.webp'],
+        ];
+    }
+
+    /**
+     * @dataProvider providerGetOriginalFilename
+     * @covers       Onigoetz\Imagecache\Manager::getOriginalFilename
+     */
+    public function testgetOriginalFilename($expected, $file)
+    {
+        $this->assertEquals($expected, $this->getManager()->getOriginalFilename($file));
     }
 
     /**

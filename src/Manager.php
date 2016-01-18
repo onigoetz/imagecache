@@ -25,6 +25,11 @@ class Manager
      */
     protected $methodCaller;
 
+    /**
+     * @var string
+     */
+    protected $retinaRegex = '/(.*)@2x\\.(jpe?g|png|webp|gif)/';
+
     public function __construct($options)
     {
         $this->options = $options + ['path_images' => 'images', 'path_cache' => 'cache'];
@@ -60,30 +65,43 @@ class Manager
         return "{$this->options['path_images']}/$file";
     }
 
+    public function isRetina($file)
+    {
+        return !!preg_match($this->retinaRegex, $file);
+    }
+
+    public function getOriginalFilename($file) {
+        $matched = preg_match($this->retinaRegex, $file, $matches);
+
+        return ($matched)? $matches[1] . '.' . $matches[2] : $file;
+    }
+
     protected function getPresetActions($preset_key, $file)
     {
-        //Is it a valid preset
+        // Is it a valid preset
         if (!array_key_exists($preset_key, $this->options['presets'])) {
             throw new Exceptions\InvalidPresetException('invalid preset');
         }
 
         $preset = $this->options['presets'][$preset_key];
 
-        //Handle retina images
-        if (strpos($file, '@2x') !== false) {
-            $file = str_replace('@2x', '', $file);
-            $preset_key = $preset_key . '@2x';
-
-            if (array_key_exists($preset_key, $this->options['presets'])) {
-                $preset = $this->options['presets'][$preset_key];
-            } else {
-                foreach ($preset as &$action) {
-                    $action = $this->generateRetinaAction($action);
-                }
-            }
+        if (!$this->isRetina($file)) {
+            return $preset;
         }
 
-        return [$preset, $file];
+        // Handle retina images
+
+        $preset_key = "$preset_key@2x";
+
+        if (array_key_exists($preset_key, $this->options['presets'])) {
+            return $this->options['presets'][$preset_key];
+        }
+
+        foreach ($preset as &$action) {
+            $action = $this->generateRetinaAction($action);
+        }
+
+        return $preset;
     }
 
     protected function generateRetinaAction($action)
@@ -110,7 +128,9 @@ class Manager
     public function handleRequest($preset_key, $file)
     {
         //do it at the beginning for early validation
-        list($preset, $source_file) = $this->getPresetActions($preset_key, $file);
+        $preset = $this->getPresetActions($preset_key, $file);
+
+        $source_file =  $this->getOriginalFilename($file);
 
         $original_file = $this->options['path_images_root'] . '/' . $this->imageUrl($source_file);
         if (!is_file($original_file)) {
