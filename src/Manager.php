@@ -32,7 +32,7 @@ class Manager
 
     public function __construct($options)
     {
-        $this->options = $options + ['path_images' => 'images', 'path_cache' => 'cache'];
+        $this->options = $options + ['path_web' => 'images', 'path_cache' => 'cache'];
     }
 
     /**
@@ -55,14 +55,18 @@ class Manager
         $this->methodCaller = $methodCaller;
     }
 
+    public function localUrl($preset, $file) {
+        return "{$this->options['path_cache']}/$preset/$file";
+    }
+
     public function url($preset, $file)
     {
-        return "{$this->options['path_images']}/{$this->options['path_cache']}/$preset/$file";
+        return "{$this->options['path_web']}/{$this->options['path_cache']}/$preset/$file";
     }
 
     public function imageUrl($file)
     {
-        return "{$this->options['path_images']}/$file";
+        return "{$this->options['path_web']}/$file";
     }
 
     public function isRetina($file)
@@ -132,16 +136,16 @@ class Manager
 
         $source_file =  $this->getOriginalFilename($file);
 
-        $original_file = $this->options['path_images_root'] . '/' . $this->imageUrl($source_file);
+        $original_file = $this->options['path_local'] . '/' . $source_file;
         if (!is_file($original_file)) {
             throw new Exceptions\NotFoundException('File not found');
         }
 
-        $final_file = $this->url($preset_key, $file);
+        $final_file = $this->localUrl($preset_key, $file);
 
-        $this->verifyDirectoryExistence($this->options['path_images_root'], dirname($final_file));
+        $this->verifyDirectoryExistence($this->options['path_local'], dirname($final_file));
 
-        $final_file = $this->options['path_images_root'] . '/' . $final_file;
+        $final_file = $this->options['path_local'] . '/' . $final_file;
 
         if (file_exists($final_file)) {
             return $final_file;

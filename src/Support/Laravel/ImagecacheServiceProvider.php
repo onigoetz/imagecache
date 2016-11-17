@@ -39,7 +39,7 @@ class ImagecacheServiceProvider extends ServiceProvider
     {
         $config = $this->getConfiguration();
 
-        $url = "{$config['path_images']}/{$config['path_cache']}/{preset}/{file}";
+        $url = "{$config['path_web']}/{$config['path_cache']}/{preset}/{file}";
 
         $this->app['router']->get(
             $url,

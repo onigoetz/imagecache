@@ -24,8 +24,8 @@ class SlimTest extends ImagecacheTestCase
     protected $client;
 
     protected $presets = [
-        'path_images' => 'images',
-        'path_images_root' => '',
+        'path_web' => 'images',
+        'path_local' => '',
         'path_cache' => 'cache',
         'presets' => [
             '40X40' => [ //exact size
@@ -53,7 +53,7 @@ class SlimTest extends ImagecacheTestCase
         ]);
 
         $this->getImageFolder();
-        $this->presets['path_images_root'] = vfsStream::url('root');
+        $this->presets['path_local'] = vfsStream::url('root');
 
         \Onigoetz\Imagecache\Support\Slim\ImagecacheRegister::register($instance, $this->presets);
 
@@ -70,16 +70,16 @@ class SlimTest extends ImagecacheTestCase
         $route = $this->app->router->getNamedRoute('onigoetz.imagecache');
 
         $this->assertInstanceOf('\Slim\Route', $route);
-        $this->assertEquals("/{$this->presets['path_images']}/{$this->presets['path_cache']}/:preset/:file", $route->getPattern());
+        $this->assertEquals("/{$this->presets['path_web']}/{$this->presets['path_cache']}/:preset/:file", $route->getPattern());
     }
 
     public function testRequestImage()
     {
         $image = $this->getDummyImageName();
 
-        $file = "/{$this->presets['path_images']}/{$this->presets['path_cache']}/40X40/$image";
+        $file = "/{$this->presets['path_cache']}/40X40/$image";
 
-        $this->client->get($file);
+        $this->client->get("/{$this->presets['path_web']}$file");
         $this->assertEquals(200, $this->client->response->status());
 
         $tmpfile = tempnam(sys_get_temp_dir(), 'imgcache');
@@ -97,7 +97,7 @@ class SlimTest extends ImagecacheTestCase
     {
         $image = $this->getDummyImageName();
 
-        $file = "/{$this->presets['path_images']}/{$this->presets['path_cache']}/50X40/$image";
+        $file = "/{$this->presets['path_web']}/{$this->presets['path_cache']}/50X40/$image";
 
         $this->client->get($file);
         $this->assertEquals(404, $this->client->response->status());
@@ -105,7 +105,7 @@ class SlimTest extends ImagecacheTestCase
 
     public function testRequestImageNonExistingImage()
     {
-        $file = "/{$this->presets['path_images']}/{$this->presets['path_cache']}/40X40/foo.png";
+        $file = "/{$this->presets['path_web']}/{$this->presets['path_cache']}/40X40/foo.png";
 
         $this->client->get($file);
         $this->assertEquals(404, $this->client->response->status());
@@ -115,9 +115,9 @@ class SlimTest extends ImagecacheTestCase
     {
         $image = $this->getDummyImageName();
 
-        file_put_contents($this->presets['path_images_root'] . '/' . $this->presets['path_images'] . "/$image", 'oxo');
+        file_put_contents($this->presets['path_local'] . "/$image", 'oxo');
 
-        $file = "/{$this->presets['path_images']}/{$this->presets['path_cache']}/40X40/$image";
+        $file = "/{$this->presets['path_web']}/{$this->presets['path_cache']}/40X40/$image";
 
         $this->client->get($file);
         $this->assertEquals(500, $this->client->response->status());

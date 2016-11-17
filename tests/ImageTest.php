@@ -13,7 +13,7 @@ class ImageTest extends ImagecacheTestCase
     public function getImage()
     {
         $this->getImageFolder();
-        $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
+        $original_file = vfsStream::url('root') . '/' . $this->getDummyImageName();
 
         return new Image($original_file);
     }
@@ -148,7 +148,7 @@ class ImageTest extends ImagecacheTestCase
     public function testSave()
     {
         $image = $this->getImage();
-        $final_file = vfsStream::url('root/images') . '/test-save.png';
+        $final_file = vfsStream::url('root') . '/test-save.png';
 
         $this->assertFalse(file_exists($final_file));
         $image->save($final_file);
@@ -158,7 +158,7 @@ class ImageTest extends ImagecacheTestCase
     public function testGetInfo()
     {
         $this->getImageFolder();
-        $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
+        $original_file = vfsStream::url('root') . '/' . $this->getDummyImageName();
 
         $image =  new Image($original_file);
 

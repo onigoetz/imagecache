@@ -21,8 +21,7 @@ trait ImagecacheTestTrait
     public function getImageFolder()
     {
         $this->vfsRoot = vfsStream::setup('root');
-        mkdir(vfsStream::url('root') . '/images');
-        vfsStream::copyFromFileSystem(__DIR__ . '/Fixtures/source', $this->vfsRoot->getChild('images'));
+        vfsStream::copyFromFileSystem(__DIR__ . '/Fixtures/source');
 
         return vfsStream::url('root');
     }
@@ -43,7 +42,7 @@ abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
     public function getManager($options = [])
     {
         //Add default option
-        $options += ['path_images_root' => $this->getImageFolder()];
+        $options += ['path_local' => $this->getImageFolder()];
 
         return new Manager($options);
     }
@@ -51,7 +50,7 @@ abstract class ImagecacheTestCase extends \PHPUnit_Framework_TestCase
     public function getMockedManager($options = [])
     {
         //Add default option
-        $options += ['path_images_root' => $this->getImageFolder()];
+        $options += ['path_local' => $this->getImageFolder()];
 
         return m::mock('Onigoetz\Imagecache\Manager', [$options])
             ->shouldAllowMockingProtectedMethods()

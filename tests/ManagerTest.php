@@ -9,7 +9,7 @@ class ManagerTest extends ImagecacheTestCase
 {
     public function getDummyImageUrl()
     {
-        return vfsStream::url('root/images') . '/' . $this->getDummyImageName();
+        return vfsStream::url('root') . '/' . $this->getDummyImageName();
     }
 
     public function setAccessible($methodName)
@@ -155,7 +155,7 @@ class ManagerTest extends ImagecacheTestCase
 
         $this->assertInstanceOf(
             'Onigoetz\Imagecache\Image',
-            $this->setAccessible('loadImage')->invoke($manager, 'vfs://root/images/' . $this->getDummyImageName())
+            $this->setAccessible('loadImage')->invoke($manager, 'vfs://root/' . $this->getDummyImageName())
         );
     }
 
@@ -177,7 +177,7 @@ class ManagerTest extends ImagecacheTestCase
     {
         $preset = '200X';
         $file = $this->getDummyImageName();
-        $final_file = 'vfs://root/images/cache/' . $preset . '/' . $file;
+        $final_file = 'vfs://root/cache/' . $preset . '/' . $file;
         $dir = dirname($final_file);
 
         $manager = $this->getMockedManager(['presets' => [$preset => []]]);
@@ -201,7 +201,7 @@ class ManagerTest extends ImagecacheTestCase
 
         $manager = $this->getMockedManager(['presets' => [$preset => []]]);
 
-        $this->assertNull($this->vfsRoot->getChild('images')->getChild('cache'));
+        $this->assertNull($this->vfsRoot->getChild('cache'));
 
         $manager->shouldReceive('buildImage')->andReturn(new Image($this->getDummyImageUrl()));
 
@@ -209,7 +209,7 @@ class ManagerTest extends ImagecacheTestCase
 
         $this->assertEquals(
             0755,
-            $this->vfsRoot->getChild('images')->getChild('cache')->getChild($preset)->getPermissions()
+            $this->vfsRoot->getChild('cache')->getChild($preset)->getPermissions()
         );
     }
 
@@ -238,14 +238,14 @@ class ManagerTest extends ImagecacheTestCase
         $file = $this->getDummyImageName();
         $preset = '200X';
         $expected = [
-            'original_file' => 'vfs://root/images/' . $file,
+            'original_file' => 'vfs://root/' . $file,
             'preset' => [],
-            'final_file' => 'vfs://root/images/cache/' . $preset . '/' . $file,
+            'final_file' => 'vfs://root/cache/' . $preset . '/' . $file,
         ];
         $expected['image'] = new Image($expected['original_file']);
 
         $manager = $this->getMockedManager(
-            ['presets' => [$preset => $expected['preset']], 'path_images_root' => $imageFolder]
+            ['presets' => [$preset => $expected['preset']], 'path_local' => $imageFolder]
         );
 
         $manager->shouldReceive('loadImage')->with($expected['original_file'])->andReturn($expected['image']);
@@ -326,8 +326,8 @@ class ManagerTest extends ImagecacheTestCase
     {
         $manager = $this->getManager();
         $file = $this->getDummyImageName();
-        $original_file = vfsStream::url('root/images') . '/' . $file;
-        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $original_file = vfsStream::url('root') . '/' . $file;
+        $final_file = vfsStream::url('root') . '/cache/200X/' . $file;
         $preset = [$entry];
 
         $image = m::mock(new Image($original_file));
@@ -387,8 +387,8 @@ class ManagerTest extends ImagecacheTestCase
     {
         $manager = $this->getManager();
         $file = $this->getDummyImageName();
-        $original_file = vfsStream::url('root/images') . '/' . $file;
-        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $original_file = vfsStream::url('root') . '/' . $file;
+        $final_file = vfsStream::url('root') . '/cache/200X/' . $file;
         $preset = [
             ['action' => 'scale', 'width' => 200, 'height' => '200'],
             ['action' => 'crop', 'width' => 120, 'offsetx' => 'left', 'offsety' => 'top'],
@@ -412,8 +412,8 @@ class ManagerTest extends ImagecacheTestCase
     {
         $manager = $this->getManager();
         $file = $this->getDummyImageName();
-        $original_file = vfsStream::url('root/images') . '/' . $file;
-        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $original_file = vfsStream::url('root') . '/' . $file;
+        $final_file = vfsStream::url('root') . '/cache/200X/' . $file;
         $preset = [['action' => 'scale', 'width' => 200, 'height' => '200']];
 
         $manager->setMethodCaller($caller = m::mock('Onigoetz\Imagecache\MethodCaller'));
@@ -432,8 +432,8 @@ class ManagerTest extends ImagecacheTestCase
     {
         $manager = $this->getManager();
         $file = $this->getDummyImageName();
-        $original_file = vfsStream::url('root/images') . '/' . $file;
-        $final_file = vfsStream::url('root/images') . '/cache/200X/' . $file;
+        $original_file = vfsStream::url('root') . '/' . $file;
+        $final_file = vfsStream::url('root') . '/cache/200X/' . $file;
         $preset = [['action' => 'scale', 'width' => 200, 'height' => '200']];
 
         $image = m::mock(new Image($original_file));

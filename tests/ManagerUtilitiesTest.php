@@ -6,26 +6,26 @@ class ManagerUtilitiesTest extends ImagecacheTestCase
 {
     public function testURL()
     {
-        $options = ['path_images' => 'img', 'path_cache' => 'cache'];
+        $options = ['path_web' => 'img', 'path_cache' => 'cache'];
         $manager = $this->getManager($options);
 
         $preset = 'preset';
         $file = 'file.jpg';
 
         $this->assertEquals(
-            "{$options['path_images']}/{$options['path_cache']}/$preset/$file",
+            "{$options['path_web']}/{$options['path_cache']}/$preset/$file",
             $manager->url($preset, $file)
         );
     }
 
     public function testImageURL()
     {
-        $options = ['path_images' => 'img'];
+        $options = ['path_web' => 'img'];
         $manager = $this->getManager($options);
 
         $file = 'file.jpg';
 
-        $this->assertEquals("{$options['path_images']}/$file", $manager->imageUrl($file));
+        $this->assertEquals("{$options['path_web']}/$file", $manager->imageUrl($file));
     }
 
     public function providerPercent()

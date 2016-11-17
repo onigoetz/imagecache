@@ -11,30 +11,26 @@ return [
     | If you put `images` it means your images are accessible at : `/images/your_image.jpg` (relative to your framework install)
     |
     */
-    'path_images' => 'images',
+    'path_web' => 'images',
 
     /*
     |--------------------------------------------------------------------------
     | Absolute path to images folder
     |--------------------------------------------------------------------------
     |
-    | Where is the `path_images` folder located ?
-    |
-    | let's say your `path_images` folder is `images` and stored in `/var/www/root/images`
-    |
-    | Here you would put `/var/www/root`
+    | Where are your images located on your filesystem ?
     |
     */
-    'path_images_root' => app('path.public'),
+    'path_local' => app('path.public') . '/images',
 
     /*
     |--------------------------------------------------------------------------
     | Cache folder
     |--------------------------------------------------------------------------
     |
-    | This folder MUST be located inside the `path_images` folder
+    | This folder MUST be located inside the `path_web` folder
     |
-    | so if you put `images` in `path_images` and `cache` in `path_cache`
+    | so if you put `images` in `path_web` and `cache` in `path_cache`
     | your image would be stored at `/images/cache/<preset>/<image.jpg>`
     |
     */

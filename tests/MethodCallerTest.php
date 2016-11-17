@@ -9,7 +9,7 @@ class MethodCallerTest extends ImagecacheTestCase
 {
     public function getImage()
     {
-        return new Image(vfsStream::url('root/images') . '/' . $this->getDummyImageName());
+        return new Image(vfsStream::url('root') . '/' . $this->getDummyImageName());
     }
 
     /**

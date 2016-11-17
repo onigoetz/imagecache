@@ -1,4 +1,4 @@
-<?php namespace Onigoetz\Imagecache\Support\Slim3;
+<?php namespace Onigoetz\Imagecache\Support\Slim;
 
 use GuzzleHttp\Psr7\LazyOpenStream;
 use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Slim\App;
 
-class ImagecacheRegister
+class ImagecacheRegister3
 {
     public function request()
     {
@@ -49,7 +49,7 @@ class ImagecacheRegister
         };
 
         $app->get(
-            "/{$config['path_images']}/{$config['path_cache']}/{preset}/{file:.*}",
+            "/{$config['path_web']}/{$config['path_cache']}/{preset}/{file:.*}",
             (new ImagecacheRegister)->request()
         )
             ->setName('onigoetz.imagecache');

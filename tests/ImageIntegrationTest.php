@@ -112,8 +112,8 @@ class ImageIntegrationTest extends ImagecacheTestCase
         }
 
         $manager = $this->getManager();
-        $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
-        $final_file = vfsStream::url('root/images') . '/' . $generated;
+        $original_file = vfsStream::url('root') . '/' . $this->getDummyImageName();
+        $final_file = vfsStream::url('root') . '/' . $generated;
         $final_file_compared = __DIR__ . '/Fixtures/result/' . $generated;
 
         $image = new Image($original_file);
@@ -151,8 +151,8 @@ class ImageIntegrationTest extends ImagecacheTestCase
     public function testFailGenerateImage($preset)
     {
         $manager = $this->getManager();
-        $original_file = vfsStream::url('root/images') . '/' . $this->getDummyImageName();
-        $final_file = vfsStream::url('root/images') . '/willFailAnyway.png';
+        $original_file = vfsStream::url('root') . '/' . $this->getDummyImageName();
+        $final_file = vfsStream::url('root') . '/willFailAnyway.png';
 
         $image = new Image($original_file);
 

@@ -18,7 +18,7 @@ class ImagecacheRegister
             }
         );
 
-        $url = "/{$config['path_images']}/{$config['path_cache']}/:preset/:file";
+        $url = "/{$config['path_web']}/{$config['path_cache']}/:preset/:file";
 
         $app->get(
             $url,
