@@ -5,6 +5,8 @@ __Breaking Changes__
 
 - `path_images` is now `path_web`, the value that goes inside is the same as before
 - `path_images_root` is now `path_local`, the value is now the absolute path to the images directory
+- Dropped support for Laravel 4
+- Dropped support for Slim 2
 
 __Other__
 

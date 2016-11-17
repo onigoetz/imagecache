@@ -92,6 +92,6 @@ class Laravel5TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function getPackageProviders($app)
     {
-        return ['\Onigoetz\Imagecache\Support\Laravel\ImagecacheServiceProvider5'];
+        return ['\Onigoetz\Imagecache\Support\Laravel\ImagecacheServiceProvider'];
     }
 }

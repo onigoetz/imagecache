@@ -4,7 +4,6 @@ use Illuminate\Support\ServiceProvider;
 use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
 use Onigoetz\Imagecache\Exceptions\NotFoundException;
 use Onigoetz\Imagecache\Manager;
-use Onigoetz\Imagecache\Transfer;
 
 class ImagecacheServiceProvider extends ServiceProvider
 {
@@ -13,12 +12,16 @@ class ImagecacheServiceProvider extends ServiceProvider
      */
     public function registerConfiguration()
     {
-        $this->app['config']->package('onigoetz/imagecache', __DIR__ . '/../../config');
+        $this->publishes(
+            [
+                __DIR__ . '/../../config/imagecache.php' => config_path('imagecache.php'),
+            ]
+        );
     }
 
     public function getConfiguration()
     {
-        return $this->app['config']->get('imagecache::imagecache');
+        return $this->app['config']->get('imagecache');
     }
 
     /**
@@ -45,7 +48,7 @@ class ImagecacheServiceProvider extends ServiceProvider
             $url,
             function ($preset, $file) {
                 try {
-                    $final_file = $this->app['imagecache']->handleRequest($preset, $file);
+                    $image = $this->app['imagecache']->handleRequestAdvanced($preset, $file);
                 } catch (InvalidPresetException $e) {
                     return \Response::make('Invalid preset', 404);
                 } catch (NotFoundException $e) {
@@ -54,13 +57,7 @@ class ImagecacheServiceProvider extends ServiceProvider
                     return \Response::make($e->getMessage(), 500);
                 }
 
-                $transfer = new Transfer($final_file);
-
-                $callback = function () use ($transfer) {
-                    $transfer->stream();
-                };
-
-                return \Response::stream($callback, $transfer->getStatus(), $transfer->getHeaders());
+                return $image->getImage()->response();
             }
         )->where('file', '.*');
     }

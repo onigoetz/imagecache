@@ -8,7 +8,7 @@ Add a dependency with this command : `composer require onigoetz/imagecache`
 
 ### Service Provider
 
-Add `Onigoetz\Imagecache\Support\Laravel\ImagecacheServiceProvider5` in `app/config/app.php` in the `'providers'` array
+Add `Onigoetz\Imagecache\Support\Laravel\ImagecacheServiceProvider` in `app/config/app.php` in the `'providers'` array
 
 ### Publish configuration
 

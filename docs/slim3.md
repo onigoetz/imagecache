@@ -11,7 +11,7 @@ Create an array that follows the configuration from the model in [The default co
 After you created an application and prepared your configuration, add this one-liner in your configuration
 
 ```
-Onigoetz\Imagecache\Support\Slim\ImagecacheRegister3::register($slim_application, $preset_configuration);
+Onigoetz\Imagecache\Support\Slim\ImagecacheRegister::register($slim_application, $preset_configuration);
 ```
 
 you're now ready to use imagecache in your project
