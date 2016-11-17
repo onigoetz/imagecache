@@ -1,9 +1,5 @@
 <?php
 
-use Imagine\Image\Box;
-use Imagine\Image\BoxInterface;
-use Imagine\Image\Point;
-use Imagine\Image\PointInterface;
 use Mockery as m;
 use Onigoetz\Imagecache\Image;
 use org\bovigo\vfs\vfsStream;
@@ -49,10 +45,30 @@ class ImageTest extends ImagecacheTestCase
     public function providerScaleAndCrop()
     {
         return [
-            [new Box(300, 200), new Box(100, 100), new Box(150, 100), new Point(25, 0)],
-            [new Box(252, 150), new Box(100, 100), new Box(168, 100), new Point(34, 0)],
-            [new Box(200, 400), new Box(100, 100), new Box(100, 200), new Point(0, 50)],
-            [new Box(797, 1100), new Box(60, 75), new Box(60, 83), new Point(0, 4)],
+            [
+                ['width' => 300, 'height' => 200],
+                ['width' => 100, 'height' => 100],
+                ['width' => 150, 'height' => 100],
+                ['x' => 25, 'y' => 0]
+            ],
+            [
+                ['width' => 252, 'height' => 150],
+                ['width' => 100, 'height' => 100],
+                ['width' => 168, 'height' => 100],
+                ['x' => 34, 'y' => 0]
+            ],
+            [
+                ['width' => 200, 'height' => 400],
+                ['width' => 100, 'height' => 100],
+                ['width' => 100, 'height' => 200],
+                ['x' => 0, 'y' => 50]
+            ],
+            [
+                ['width' => 797, 'height' => 1100],
+                ['width' => 60, 'height' => 75],
+                ['width' => 60, 'height' => 83],
+                ['x' => 0, 'y' => 4]
+            ],
         ];
     }
 
@@ -64,29 +80,18 @@ class ImageTest extends ImagecacheTestCase
         $image = $this->getImage();
         $image->setImage($mockedImage = m::mock($image->getImage()));
 
-        $scaledMatcher = function (BoxInterface $size) use ($scaled) {
-            $this->assertEquals(strval($scaled), strval($size));
+        $mockedImage->shouldReceive('getWidth')->andReturn($originalImageSize['width']);
+        $mockedImage->shouldReceive('getHeight')->andReturn($originalImageSize['height']);
 
-            return strval($size) == strval($scaled);
-        };
+        $mockedImage->shouldReceive('resize')->with($scaled['width'], $scaled['height']);
+        $mockedImage->shouldReceive('crop')->with(
+            $resizeDestination['width'],
+            $resizeDestination['height'],
+            $position['x'],
+            $position['y']
+        );
 
-        $resizeMatcher = function (BoxInterface $size) use ($resizeDestination) {
-            $this->assertEquals(strval($resizeDestination), strval($size));
-
-            return strval($resizeDestination) == strval($size);
-        };
-
-        $pointMatcher = function (PointInterface $point) use ($position) {
-            $this->assertEquals(strval($position), strval($point));
-
-            return strval($position) == strval($point);
-        };
-
-        $mockedImage->shouldReceive('getSize')->andReturn($originalImageSize);
-        $mockedImage->shouldReceive('crop')->with(m::on($pointMatcher), m::on($resizeMatcher));
-        $mockedImage->shouldReceive('resize')->with(m::on($scaledMatcher));
-
-        $image->scale_and_crop($resizeDestination->getWidth(), $resizeDestination->getHeight());
+        $image->scale_and_crop($resizeDestination['width'], $resizeDestination['height']);
     }
 
     public function testRotateRandom()
@@ -100,7 +105,7 @@ class ImageTest extends ImagecacheTestCase
         $image = $this->getImage();
         $image->setImage($mockedImage = m::mock($image->getImage()));
 
-        $mockedImage->shouldReceive('rotate')->with(m::on($matcher), m::type('Imagine\Image\Palette\Color\ColorInterface'));
+        $mockedImage->shouldReceive('rotate')->with(m::on($matcher), m::any());
 
         $image->rotate($variation, null, true);
     }

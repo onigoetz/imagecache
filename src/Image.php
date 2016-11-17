@@ -5,11 +5,7 @@
  */
 namespace Onigoetz\Imagecache;
 
-use Imagine\Filter\Advanced\Grayscale;
-use Imagine\Image\Box;
-use Imagine\Image\ImageInterface;
-use Imagine\Image\Point;
-use RuntimeException;
+use Intervention\Image\ImageManagerStatic as InterventionImage;
 
 /**
  * An image to run through imagecache
@@ -30,7 +26,7 @@ class Image
 
     /**
      * Image resource
-     * @var \Imagine\Image\ImageInterface
+     * @var \Intervention\Image\Image
      */
     protected $image;
 
@@ -49,12 +45,11 @@ class Image
             throw new Exceptions\NotFoundException('file not found');
         }
 
-        $imagine = $this->getImagine();
-        $this->image = $imagine->open($source);
+        $this->image = InterventionImage::make($source);
     }
 
     /**
-     * @return ImageInterface
+     * @return \Intervention\Image\Image
      */
     public function getImage()
     {
@@ -62,33 +57,12 @@ class Image
     }
 
     /**
-     * @param ImageInterface $image
+     * @param \Intervention\Image\Image $image
      * used mainly for unit tests, we cannot typehint as we get a mockery object
      */
     public function setImage($image)
     {
         $this->image = $image;
-    }
-
-    /**
-     * @return \Imagine\Image\ImagineInterface
-     * @codeCoverageIgnore This method is linked to the system, so we can't test it correctly
-     */
-    protected function getImagine()
-    {
-        try {
-            return new \Imagine\Gd\Imagine();
-        } catch (RuntimeException $noGd) {
-            try {
-                return new \Imagine\Imagick\Imagine();
-            } catch (RuntimeException $noImagick) {
-                try {
-                    return new \Imagine\Gmagick\Imagine();
-                } catch (RuntimeException $noGmagick) {
-                    throw new RuntimeException('none of Gd, Imagick or Gmagick are available on this setup');
-                }
-            }
-        }
     }
 
     /**
@@ -98,7 +72,7 @@ class Image
      */
     public function getWidth()
     {
-        return $this->image->getSize()->getWidth();
+        return $this->image->getWidth();
     }
 
     /**
@@ -108,7 +82,7 @@ class Image
      */
     public function getHeight()
     {
-        return $this->image->getSize()->getHeight();
+        return $this->image->getHeight();
     }
 
     /**
@@ -131,11 +105,9 @@ class Image
      */
     public function getInfo()
     {
-        $size = $this->image->getSize();
-
         $this->info = [
-            'width' => $size->getWidth(),
-            'height' => $size->getHeight(),
+            'width' => $this->getWidth(),
+            'height' => $this->getHeight(),
             'file_size' => $this->getFileSize(),
         ];
 
@@ -155,8 +127,6 @@ class Image
      * @param int $height The target height, in pixels.
      *
      * @throws \LogicException if the parameters are wrong
-     * @return bool true or false, based on success.
-     *
      *
      * @see resize()
      * @see crop()
@@ -179,8 +149,6 @@ class Image
 
         $this->resize($w, $h);
         $this->crop($x, $y, $width, $height);
-
-        return false;
     }
 
     /**
@@ -203,12 +171,15 @@ class Image
 
         if ($width !== null && $height !== null) {
             $this->resize($width, $height);
+            return;
         }
 
-        $size = $this->image->getSize();
-        $size = ($width !== null) ? $size->widen($width) : $size->heighten($height);
+        if ($width !== null) {
+            $this->image->widen($width);
+            return;
+        }
 
-        $this->image->resize($size);
+        $this->image->heighten($height);
     }
 
     /**
@@ -216,12 +187,10 @@ class Image
      *
      * @param int $width The target width, in pixels.
      * @param int $height The target height, in pixels.
-     *
-     * @return bool true or false, based on success.
      */
     public function resize($width, $height)
     {
-        $this->image->resize(new Box($width, $height));
+        $this->image->resize($width, $height);
     }
 
     /**
@@ -230,16 +199,13 @@ class Image
      * @param  int $degrees The number of (clockwise) degrees to rotate the image.
      * @param  string|null $background hexadecimal background color
      * @param  bool $random
-     * @return bool     true or false, based on success.
      */
     public function rotate($degrees, $background = null, $random = false)
     {
-        $palette = new \Imagine\Image\Palette\RGB();
-
-        // by default the background is transparent if supported
-        $color = $palette->color('fff');
-        if (strlen(trim($background))) {
-            $color = $palette->color($background, 0);
+        if ($background) {
+            $background = trim($background);
+        } else {
+            $background = "ffffff";
         }
 
         if ($random) {
@@ -247,7 +213,7 @@ class Image
             $degrees = rand(-1 * $deg, $deg);
         }
 
-        $this->image->rotate($degrees, $color);
+        $this->image->rotate($degrees, $background);
     }
 
     /**
@@ -263,7 +229,6 @@ class Image
      *   The target height, in pixels.
      *
      * @throws \LogicException if the parameters are wrong
-     * @return bool true or false, based on success.
      */
     public function crop($xoffset, $yoffset, $width, $height)
     {
@@ -283,10 +248,7 @@ class Image
             throw new \LogicException('"height" must not be null for "crop"');
         }
 
-        $start = new Point($xoffset, $yoffset);
-        $size = new Box($width, $height);
-
-        $this->image->crop($start, $size);
+        $this->image->crop($width, $height, $xoffset, $yoffset);
     }
 
     /**
@@ -294,7 +256,7 @@ class Image
      */
     public function desaturate()
     {
-        (new Grayscale())->apply($this->image);
+        $this->image->greyscale();
     }
 
     /**

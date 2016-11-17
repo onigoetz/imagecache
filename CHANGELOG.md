@@ -8,6 +8,7 @@ __Breaking Changes__
 
 __Other__
 
+- We use intervention/image to generate images instead of imagine/imagine
 - Added support for Slim 3
 
 ## 1.2.1 Retina Support
