@@ -40,8 +40,6 @@ For it to work you need
 ## Installation
 
 - [Laravel 5](http://github.com/onigoetz/imagecache/tree/master/docs/laravel5.md)
-- [Laravel 4](http://github.com/onigoetz/imagecache/tree/master/docs/laravel.md)
-- [Slim Framework 2](http://github.com/onigoetz/imagecache/tree/master/docs/slim.md)
 - [Slim Framework 3](http://github.com/onigoetz/imagecache/tree/master/docs/slim3.md)
 - [Raw PHP](http://github.com/onigoetz/imagecache/tree/master/docs/raw.md)
 
