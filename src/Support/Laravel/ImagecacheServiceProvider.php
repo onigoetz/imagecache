@@ -4,6 +4,7 @@ use Illuminate\Support\ServiceProvider;
 use Onigoetz\Imagecache\Exceptions\InvalidPresetException;
 use Onigoetz\Imagecache\Exceptions\NotFoundException;
 use Onigoetz\Imagecache\Manager;
+use Onigoetz\Imagecache\Transfer;
 
 class ImagecacheServiceProvider extends ServiceProvider
 {
@@ -48,7 +49,7 @@ class ImagecacheServiceProvider extends ServiceProvider
             $url,
             function ($preset, $file) {
                 try {
-                    $image = $this->app['imagecache']->handleRequestAdvanced($preset, $file);
+                    $final_file = $this->app['imagecache']->handleRequest($preset, $file);
                 } catch (InvalidPresetException $e) {
                     return \Response::make('Invalid preset', 404);
                 } catch (NotFoundException $e) {
@@ -57,7 +58,13 @@ class ImagecacheServiceProvider extends ServiceProvider
                     return \Response::make($e->getMessage(), 500);
                 }
 
-                return $image->getImage()->response();
+                $transfer = new Transfer($final_file);
+
+                $callback = function () use ($transfer) {
+                    $transfer->stream();
+                };
+
+                return \Response::stream($callback, $transfer->getStatus(), $transfer->getHeaders());
             }
         )->where('file', '.*');
     }
