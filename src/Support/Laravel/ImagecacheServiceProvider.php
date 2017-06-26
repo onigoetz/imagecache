@@ -30,13 +30,11 @@ class ImagecacheServiceProvider extends ServiceProvider
      */
     public function registerManager()
     {
-        $this->app['imagecache'] = $this->app->share(
-            function () {
-                $config = $this->getConfiguration();
+        $this->app->singleton('imagecache', function () {
+            $config = $this->getConfiguration();
 
-                return new Manager($config);
-            }
-        );
+            return new Manager($config);
+        });
     }
 
     public function registerRoute()
