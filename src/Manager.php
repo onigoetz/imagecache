@@ -120,6 +120,22 @@ class Manager
     }
 
     /**
+     * The path to the original file
+     * @param $source_file
+     * @return string
+     * @throws Exceptions\NotFoundException
+     */
+    public function getOriginalFile($source_file)
+    {
+        $original_file = $this->options['path_local'] . '/' . $source_file;
+        if (!is_file($original_file)) {
+            throw new Exceptions\NotFoundException('File not found');
+        }
+
+        return $original_file;
+    }
+
+    /**
      * Take a preset and a file and return a transformed image
      *
      * @param $preset_key string
@@ -136,10 +152,7 @@ class Manager
 
         $source_file =  $this->getOriginalFilename($file);
 
-        $original_file = $this->options['path_local'] . '/' . $source_file;
-        if (!is_file($original_file)) {
-            throw new Exceptions\NotFoundException('File not found');
-        }
+        $original_file = $this->getOriginalFile($source_file);
 
         $final_file = $this->localUrl($preset_key, $file);
 
