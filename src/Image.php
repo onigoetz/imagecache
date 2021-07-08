@@ -232,6 +232,10 @@ class Image
      */
     public function crop($xoffset, $yoffset, $width, $height)
     {
+        
+        $xoffset = (int)$xoffset;
+        $yoffset = (int)$yoffset;
+
         if ($xoffset === null) {
             throw new \LogicException('"xoffset" must not be null for "crop"');
         }
