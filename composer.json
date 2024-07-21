@@ -27,5 +27,13 @@
     "psr-4": {
       "Onigoetz\\Imagecache\\": "src/"
     }
+  },
+  "scripts": {
+    "test": "phpunit"
+  },
+  "config": {
+    "allow-plugins": {
+      "kylekatarnls/update-helper": true
+    }
   }
 }

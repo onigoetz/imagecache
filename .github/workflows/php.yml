@@ -1,0 +1,59 @@
+name: PHP
+
+on: ['push']
+
+jobs:
+  build:
+    strategy:
+      max-parallel: 15
+      matrix:
+        php-versions: ['5.5', '5.6', '7.0', '7.1']
+
+    name: PHP ${{ matrix.php-versions }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Setup PHP Action
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-versions }}
+    
+    - name: Validate composer.json and composer.lock
+      run: composer validate
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Run test suite
+      run: composer run-script test
+
+  #sonarcloud:
+  #  runs-on: ubuntu-latest
+  #  if: github.event_name != 'pull_request'
+
+  #  name: "SonarCloud"
+  #  steps:
+  #  - uses: actions/checkout@v1
+  #  - name: Setup PHP
+  #    uses: shivammathur/setup-php@master
+  #    with:
+  #      php-version: 7.4
+  #      coverage: pcov
+
+    #- name: Install dependencies
+    #  run: composer install --prefer-dist --no-progress --no-suggest
+
+    #- name: Run test suite
+    #  run: composer run-script test -- --coverage-clover=coverage.clover --log-junit=test-report.xml
+
+      # https://community.sonarsource.com/t/code-coverage-doesnt-work-with-github-action/16747/5
+    #- name: fix code coverage paths
+    #  run: sed -i 's/\/home\/runner\/work\/Core\/Core\//\/github\/workspace\//g' coverage.clover
+      
+    #- name: SonarCloud Scan
+    #  uses: SonarSource/sonarcloud-github-action@v1.1
+    #  env:
+    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
