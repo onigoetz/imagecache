@@ -7,7 +7,7 @@ jobs:
     strategy:
       max-parallel: 15
       matrix:
-        php-versions: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
+        php-versions: ['8.1', '8.2', '8.3']
 
     name: PHP ${{ matrix.php-versions }}
     runs-on: ubuntu-latest
@@ -34,15 +34,6 @@ jobs:
       max-parallel: 15
       matrix: 
         include:
-          - php: 7.3
-            phpunit: 8
-            testbench: 3
-          - php: 7.4
-            phpunit: 8
-            testbench: 4
-          - php: 7.4
-            phpunit: 8
-            testbench: 5
           - php: 8.1
             phpunit: 8
             testbench: 6
