@@ -1,4 +1,12 @@
 
+## 3.0.0
+
+__Breaking Changes__
+
+- Support Slim 4 instead of Slim 3
+- Support Laravel 8 / 9 / 10 / 11 (Dropped support for Laravel 5)
+- Support PHP 8.1 / 8.2 / 8.3
+
 ## 2.0.0
 
 __Breaking Changes__

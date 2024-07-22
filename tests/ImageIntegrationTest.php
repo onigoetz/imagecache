@@ -1,8 +1,9 @@
 <?php namespace Onigoetz\ImagecacheTests;
 
 use ReflectionMethod;
-use Jenssegers\ImageHash\ImageHash;
-use Jenssegers\ImageHash\Implementations\DifferenceHash;
+use Image\PerceptualHash;
+use Image\PerceptualHash\Algorithm\DifferenceHash;
+use Image\PerceptualHash\Algorithm\PerceptionHash;
 use Onigoetz\Imagecache\Image;
 use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
@@ -128,12 +129,9 @@ class ImageIntegrationTest extends ImagecacheTestCase
             $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file)
         );
 
-        $hasher = new ImageHash(new DifferenceHash);
+        $ph = new PerceptualHash($final_file, new DifferenceHash());
 
-        $generated = $hasher->hash($final_file);
-        $expected = $hasher->hash($final_file_compared);
-
-        $this->assertLessThan(4, $expected->distance($generated));
+        $this->assertLessThan(3, $ph->compare($final_file_compared));
     }
 
     public static function providerFailedImageGenerator()
