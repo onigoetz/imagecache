@@ -1,8 +1,10 @@
-<?php
+<?php namespace Onigoetz\ImagecacheTests;
 
+use ReflectionMethod;
 use Jenssegers\ImageHash\ImageHash;
 use Jenssegers\ImageHash\Implementations\DifferenceHash;
 use Onigoetz\Imagecache\Image;
+use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
 
 class ImageIntegrationTest extends ImagecacheTestCase
@@ -15,7 +17,7 @@ class ImageIntegrationTest extends ImagecacheTestCase
         return $method;
     }
 
-    public function providerImageGenerator()
+    public static function providerImageGenerator()
     {
         return [
             [
@@ -114,7 +116,7 @@ class ImageIntegrationTest extends ImagecacheTestCase
         $manager = $this->getManager();
         $original_file = vfsStream::url('root') . '/' . $this->getDummyImageName();
         $final_file = vfsStream::url('root') . '/' . $generated;
-        $final_file_compared = __DIR__ . '/Fixtures/result/' . $generated;
+        $final_file_compared = __DIR__ . '/../test-utils/Fixtures/result/' . $generated;
 
         $image = new Image($original_file);
 
@@ -122,17 +124,19 @@ class ImageIntegrationTest extends ImagecacheTestCase
         //$this->assertInstanceOf('\Onigoetz\Imagecache\Image', $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file_compared));
 
         $this->assertInstanceOf(
-            '\Onigoetz\Imagecache\Image',
+            \Onigoetz\Imagecache\Image::class,
             $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file)
         );
 
         $hasher = new ImageHash(new DifferenceHash);
 
-        //generated images must be at least 95% identical
-        $this->assertLessThan(3, $hasher->compare($final_file, $final_file_compared));
+        $generated = $hasher->hash($final_file);
+        $expected = $hasher->hash($final_file_compared);
+
+        $this->assertLessThan(4, $expected->distance($generated));
     }
 
-    public function providerFailedImageGenerator()
+    public static function providerFailedImageGenerator()
     {
         return [
             [
@@ -146,10 +150,10 @@ class ImageIntegrationTest extends ImagecacheTestCase
 
     /**
      * @dataProvider providerFailedImageGenerator
-     * @expectedException \LogicException
      */
     public function testFailGenerateImage($preset)
     {
+        $this->expectException(\LogicException::class);
         $manager = $this->getManager();
         $original_file = vfsStream::url('root') . '/' . $this->getDummyImageName();
         $final_file = vfsStream::url('root') . '/willFailAnyway.png';

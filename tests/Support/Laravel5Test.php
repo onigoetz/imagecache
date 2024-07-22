@@ -1,6 +1,6 @@
-<?php namespace Onigoetz\Imagecache\Support;
+<?php namespace Onigoetz\ImagecacheTests\Support;
 
-use Laravel5TestCase;
+use Onigoetz\ImagecacheUtils\Support\Laravel5TestCase;
 use org\bovigo\vfs\vfsStream;
 
 class Laravel5Test extends Laravel5TestCase
@@ -16,7 +16,7 @@ class Laravel5Test extends Laravel5TestCase
         ],
     ];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

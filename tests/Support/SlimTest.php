@@ -1,15 +1,10 @@
-<?php
-/**
- * Created by IntelliJ IDEA.
- * User: sgoetz
- * Date: 12.09.14
- * Time: 15:40
- */
-namespace Onigoetz\Imagecache\Support;
+<?php namespace Onigoetz\ImagecacheTests\Support;
 
-use ImagecacheTestCase;
+use DI\ContainerBuilder;
+use Slim\Factory\AppFactory;
+use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
+use Onigoetz\ImagecacheUtils\Support\WebTestClient;
 use org\bovigo\vfs\vfsStream;
-use There4\Slim\Test\WebTestClient;
 
 class SlimTest extends ImagecacheTestCase
 {
@@ -35,7 +30,7 @@ class SlimTest extends ImagecacheTestCase
     ];
 
     // Run for each unit test to setup our slim app environment
-    public function setup()
+    public function setup(): void
     {
         // Establish a local reference to the Slim app object
         $this->app = $this->getSlimInstance();
@@ -46,12 +41,11 @@ class SlimTest extends ImagecacheTestCase
     // will most likely override this for your own application.
     public function getSlimInstance()
     {
-        $instance = new \Slim\App(['settings' => [
-            'version' => '0.0.0',
-            'debug'   => false,
-            'mode'    => 'testing',
-            'routerCacheFile' => false,
-        ]]);
+        $containerBuilder = new ContainerBuilder();
+        $container = $containerBuilder->build();
+        AppFactory::setContainer($container);
+
+        $instance = AppFactory::create();
 
         $this->getImageFolder();
         $this->presets['path_local'] = vfsStream::url('root');
@@ -63,14 +57,15 @@ class SlimTest extends ImagecacheTestCase
 
     public function testIsManager()
     {
-        $this->assertInstanceOf('\Onigoetz\Imagecache\Manager', $this->app->getContainer()['imagecache']);
+        $this->assertInstanceOf('\Onigoetz\Imagecache\Manager', $this->app->getContainer()->get('imagecache'));
     }
 
     public function testRoute()
     {
-        $route = $this->app->getContainer()->get('router')->getNamedRoute('onigoetz.imagecache');
+        $route = $this->app->getRouteCollector()
+            ->getNamedRoute('onigoetz.imagecache');
 
-        $this->assertInstanceOf('\Slim\Route', $route);
+        $this->assertInstanceOf(\Slim\Routing\Route::class, $route);
         $this->assertEquals("/{$this->presets['path_web']}/{$this->presets['path_cache']}/{preset}/{file:.*}", $route->getPattern());
     }
 
@@ -81,6 +76,7 @@ class SlimTest extends ImagecacheTestCase
         $file = "/{$this->presets['path_cache']}/40X40/$image";
 
         $this->client->get("/{$this->presets['path_web']}$file");
+
         $this->assertEquals(200, $this->client->response->getStatusCode());
 
         $tmpfile = tempnam(sys_get_temp_dir(), 'imgcache');

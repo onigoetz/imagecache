@@ -1,8 +1,9 @@
-<?php
+<?php namespace Onigoetz\ImagecacheTests;
 
 use Mockery as m;
 use Onigoetz\Imagecache\Image;
 use Onigoetz\Imagecache\MethodCaller;
+use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
 
 class MethodCallerTest extends ImagecacheTestCase
@@ -20,17 +21,17 @@ class MethodCallerTest extends ImagecacheTestCase
         $config = ['height' => 100, 'width' => 200];
 
         $image = m::mock($this->getImage());
-        $image->shouldReceive('scale_and_crop')->with($config['width'], $config['height'])->andReturn(true);
+        $image->expects()->scale_and_crop($config['width'], $config['height'])->andReturn(true);
 
         (new MethodCaller)->call($image, 'scale_and_crop', $config);
     }
 
     /**
-     * @expectedException \LogicException
      * @covers Onigoetz\Imagecache\MethodCaller::call
      */
     public function testCallMethodDoesntExist()
     {
+        $this->expectException(\LogicException::class);
         (new MethodCaller)->call($this->getImage(), 'foo', []);
     }
 
@@ -42,7 +43,7 @@ class MethodCallerTest extends ImagecacheTestCase
         $config = ['degrees' => 90];
 
         $image = m::mock($this->getImage());
-        $image->shouldReceive('rotate')->with($config['degrees'], null, false)->andReturn(true);
+        $image->expects()->rotate($config['degrees'], null, false)->andReturn(true);
 
         (new MethodCaller)->call($image, 'rotate', $config);
     }

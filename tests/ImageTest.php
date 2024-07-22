@@ -1,7 +1,8 @@
-<?php
+<?php namespace Onigoetz\ImagecacheTests;
 
 use Mockery as m;
 use Onigoetz\Imagecache\Image;
+use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
 
 class ImageTest extends ImagecacheTestCase
@@ -14,35 +15,29 @@ class ImageTest extends ImagecacheTestCase
         return new Image($original_file);
     }
 
-    /**
-     * @expectedException \Onigoetz\Imagecache\Exceptions\NotFoundException
-     */
     public function testFileNotFound()
     {
+        $this->expectException(\Onigoetz\Imagecache\Exceptions\NotFoundException::class);
         $this->assertFalse(new Image('/this/file/doesnt_exist'));
     }
 
-    /**
-     * @expectedException \LogicException
-     */
     public function testScale_and_cropNeedsWidth()
     {
+        $this->expectException(\LogicException::class);
         $image = $this->getImage();
 
         $image->scale_and_crop(null, 300);
     }
 
-    /**
-     * @expectedException \LogicException
-     */
     public function testScale_and_cropNeedsHeight()
     {
+        $this->expectException(\LogicException::class);
         $image = $this->getImage();
 
         $image->scale_and_crop(300, null);
     }
 
-    public function providerScaleAndCrop()
+    public static function providerScaleAndCrop()
     {
         return [
             [
@@ -80,11 +75,11 @@ class ImageTest extends ImagecacheTestCase
         $image = $this->getImage();
         $image->setImage($mockedImage = m::mock($image->getImage()));
 
-        $mockedImage->shouldReceive('getWidth')->andReturn($originalImageSize['width']);
-        $mockedImage->shouldReceive('getHeight')->andReturn($originalImageSize['height']);
+        $mockedImage->expects()->width()->twice()->andReturn($originalImageSize['width']);
+        $mockedImage->expects()->height()->twice()->andReturn($originalImageSize['height']);
 
-        $mockedImage->shouldReceive('resize')->with($scaled['width'], $scaled['height']);
-        $mockedImage->shouldReceive('crop')->with(
+        $mockedImage->expects()->resize($scaled['width'], $scaled['height']);
+        $mockedImage->expects()->crop(
             $resizeDestination['width'],
             $resizeDestination['height'],
             $position['x'],
@@ -105,46 +100,39 @@ class ImageTest extends ImagecacheTestCase
         $image = $this->getImage();
         $image->setImage($mockedImage = m::mock($image->getImage()));
 
-        $mockedImage->shouldReceive('rotate')->with(m::on($matcher), m::any());
+        $mockedImage->expects()
+            ->rotate(m::on($matcher), m::any());
 
         $image->rotate($variation, null, true);
     }
 
-    /**
-     * @expectedException \LogicException
-     */
     public function testCropNeedsWidth()
     {
+        $this->expectException(\LogicException::class);
         $image = $this->getImage();
 
         $image->crop(0, 0, null, 0);
     }
 
-    /**
-     * @expectedException \LogicException
-     */
     public function testCropNeedsHeight()
     {
+        $this->expectException(\LogicException::class);
         $image = $this->getImage();
 
         $image->crop(0, 0, 0, null);
     }
 
-    /**
-     * @expectedException \LogicException
-     */
     public function testCropNeedsXOffset()
     {
+        $this->expectException(\LogicException::class);
         $image = $this->getImage();
 
         $image->crop(null, 0, 300, 300);
     }
 
-    /**
-     * @expectedException \LogicException
-     */
     public function testCropNeedsYOffset()
     {
+        $this->expectException(\LogicException::class);
         $image = $this->getImage();
 
         $image->crop(0, null, 300, 300);
@@ -185,11 +173,9 @@ class ImageTest extends ImagecacheTestCase
         $this->assertFalse($image->getFileSize() == $original_size);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testSaveFail()
     {
+        $this->expectException(\RuntimeException::class);
         $image = $this->getImage();
         $image->setImage($mockedImage = m::mock($image->getImage()));
 

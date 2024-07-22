@@ -1,6 +1,7 @@
-<?php
+<?php namespace Onigoetz\ImagecacheTests;
 
 use Onigoetz\Imagecache\Manager;
+use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 
 class ManagerUtilitiesTest extends ImagecacheTestCase
 {
@@ -28,7 +29,7 @@ class ManagerUtilitiesTest extends ImagecacheTestCase
         $this->assertEquals("{$options['path_web']}/$file", $manager->imageUrl($file));
     }
 
-    public function providerPercent()
+    public static function providerPercent()
     {
         return [
             [500, '50%', 1000],
@@ -48,7 +49,7 @@ class ManagerUtilitiesTest extends ImagecacheTestCase
         $this->assertEquals($result, $manager->percent($percent, $current_value));
     }
 
-    public function providerKeywords()
+    public static function providerKeywords()
     {
         return [
             [0, 'top', 1235, 1000],

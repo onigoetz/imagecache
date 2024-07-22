@@ -1,8 +1,10 @@
-<?php
+<?php namespace Onigoetz\ImagecacheTests;
 
+use ReflectionMethod;
 use Mockery as m;
 use Onigoetz\Imagecache\Image;
 use Onigoetz\Imagecache\MethodCaller;
+use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
 
 class ManagerTest extends ImagecacheTestCase
@@ -42,11 +44,9 @@ class ManagerTest extends ImagecacheTestCase
         $this->assertSame($methodCaller, $manager->getMethodCaller());
     }
 
-    /**
-     * @expectedException \Onigoetz\Imagecache\Exceptions\InvalidPresetException
-     */
     public function testNonExistingPreset()
     {
+        $this->expectException(\Onigoetz\Imagecache\Exceptions\InvalidPresetException::class);
         $manager = $this->getManager(['presets' => []]);
 
         $this->setAccessible('getPresetActions')->invoke($manager, '200X', 'file.jpg');
@@ -80,7 +80,7 @@ class ManagerTest extends ImagecacheTestCase
         $this->assertEquals($original_preset, $resolved_preset);
     }
 
-    public function providerRetinaGenerator()
+    public static function providerRetinaGenerator()
     {
         return [
             [
@@ -160,11 +160,11 @@ class ManagerTest extends ImagecacheTestCase
     }
 
     /**
-     * @expectedException \Onigoetz\Imagecache\Exceptions\NotFoundException
      * @covers Onigoetz\Imagecache\Manager::handleRequest
      */
     public function testNonExistingFile()
     {
+        $this->expectException(\Onigoetz\Imagecache\Exceptions\NotFoundException::class);
         $manager = $this->getManager(['presets' => ['200X' => []]]);
 
         $manager->handleRequest('200X', 'file.jpg');
@@ -215,10 +215,10 @@ class ManagerTest extends ImagecacheTestCase
 
     /**
      * @covers Onigoetz\Imagecache\Manager::handleRequest
-     * @expectedException \RuntimeException
      */
     public function testHandleRequestCannotLoadImage()
     {
+        $this->expectException(\RuntimeException::class);
         $preset = '200X';
 
         $manager = $this->getMockedManager(['presets' => [$preset => []]]);
@@ -268,10 +268,10 @@ class ManagerTest extends ImagecacheTestCase
 
     /**
      * @covers Onigoetz\Imagecache\Manager::handleRequest
-     * @expectedException \RuntimeException
      */
     public function testHandleFailedRequest()
     {
+        $this->expectException(\RuntimeException::class);
         $file = $this->getDummyImageName();
         $preset = '200X';
 
@@ -282,7 +282,7 @@ class ManagerTest extends ImagecacheTestCase
         $manager->handleRequest($preset, $file);
     }
 
-    public function providerBuildImage()
+    public static function providerBuildImage()
     {
         //the example image is 500x500
 
@@ -339,7 +339,7 @@ class ManagerTest extends ImagecacheTestCase
         $this->assertInstanceOf('\Onigoetz\Imagecache\Image', $this->setAccessible('buildImage')->invoke($manager, $preset, $image, $final_file));
     }
 
-    public function providerIsRetina()
+    public static function providerIsRetina()
     {
         return [
             [true, 'image@2x.jpg'],
@@ -358,7 +358,7 @@ class ManagerTest extends ImagecacheTestCase
         $this->assertEquals($expected, $this->getManager()->isRetina($file));
     }
 
-    public function providerGetOriginalFilename()
+    public static function providerGetOriginalFilename()
     {
         return [
             ['image.jpg', 'image@2x.jpg'],
@@ -406,10 +406,10 @@ class ManagerTest extends ImagecacheTestCase
 
     /**
      * @covers Onigoetz\Imagecache\Manager::buildImage
-     * @expectedException \RuntimeException
      */
     public function testBuildImageManipulationFailed()
     {
+        $this->expectException(\RuntimeException::class);
         $manager = $this->getManager();
         $file = $this->getDummyImageName();
         $original_file = vfsStream::url('root') . '/' . $file;
@@ -426,10 +426,10 @@ class ManagerTest extends ImagecacheTestCase
 
     /**
      * @covers Onigoetz\Imagecache\Manager::buildImage
-     * @expectedException \RuntimeException
      */
     public function testBuildImageSaveFailed()
     {
+        $this->expectException(\RuntimeException::class);
         $manager = $this->getManager();
         $file = $this->getDummyImageName();
         $original_file = vfsStream::url('root') . '/' . $file;

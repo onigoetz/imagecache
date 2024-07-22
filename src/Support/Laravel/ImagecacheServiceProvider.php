@@ -11,13 +11,21 @@ class ImagecacheServiceProvider extends ServiceProvider
     /**
      * Add the namespace to config
      */
-    public function registerConfiguration()
+    public function bootConfiguration()
     {
         $this->publishes(
             [
                 __DIR__ . '/../../config/imagecache.php' => config_path('imagecache.php'),
-            ]
+            ],
+            'config'
         );
+    }
+
+    public function registerConfiguration()
+    {
+
+        $configPath = __DIR__ . '/../../config/imagecache.php';
+        $this->mergeConfigFrom($configPath, 'imagecache');
     }
 
     public function getConfiguration()
@@ -65,6 +73,10 @@ class ImagecacheServiceProvider extends ServiceProvider
                 return \Response::stream($callback, $transfer->getStatus(), $transfer->getHeaders());
             }
         )->where('file', '.*');
+    }
+
+    public function boot() {
+        $this->bootConfiguration();
     }
 
     /**

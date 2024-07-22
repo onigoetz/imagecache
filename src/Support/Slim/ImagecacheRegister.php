@@ -20,7 +20,7 @@ class ImagecacheRegister
             $file = $args['file'];
 
             try {
-                $final_file = $this->imagecache->handleRequest($preset, $file);
+                $final_file = $this->get('imagecache')->handleRequest($preset, $file);
             } catch (InvalidPresetException $e) {
                 $res->getBody()->write($e->getMessage());
                 return $res->withStatus(404);
@@ -43,9 +43,9 @@ class ImagecacheRegister
 
     public static function register(App $app, $config)
     {
-        $app->getContainer()['imagecache'] = function () use ($config) {
+        $app->getContainer()->set('imagecache', function () use ($config) {
             return new Manager($config);
-        };
+        });
 
         $app->get(
             "/{$config['path_web']}/{$config['path_cache']}/{preset}/{file:.*}",

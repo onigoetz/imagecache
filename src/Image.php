@@ -5,7 +5,8 @@
  */
 namespace Onigoetz\Imagecache;
 
-use Intervention\Image\ImageManagerStatic as InterventionImage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 /**
  * An image to run through imagecache
@@ -45,7 +46,10 @@ class Image
             throw new Exceptions\NotFoundException('file not found');
         }
 
-        $this->image = InterventionImage::make($source);
+        // create image manager with desired driver
+        $manager = new ImageManager(new Driver());
+
+        $this->image = $manager->read($source);
     }
 
     /**
@@ -72,7 +76,7 @@ class Image
      */
     public function getWidth()
     {
-        return $this->image->getWidth();
+        return $this->image->width();
     }
 
     /**
@@ -82,7 +86,7 @@ class Image
      */
     public function getHeight()
     {
-        return $this->image->getHeight();
+        return $this->image->height();
     }
 
     /**
@@ -169,17 +173,7 @@ class Image
             throw new \LogicException('one of "width" or "height" must be set for "scale"');
         }
 
-        if ($width !== null && $height !== null) {
-            $this->resize($width, $height);
-            return;
-        }
-
-        if ($width !== null) {
-            $this->image->widen($width);
-            return;
-        }
-
-        $this->image->heighten($height);
+        $this->image->scale($width, $height);
     }
 
     /**
