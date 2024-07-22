@@ -3,3 +3,4 @@ coverage.clover
 ocular.phar
 vendor/
 build/*
+.phpunit.result.cache
