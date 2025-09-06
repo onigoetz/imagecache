@@ -4,6 +4,7 @@ use Mockery as m;
 use Onigoetz\Imagecache\Image;
 use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ImageTest extends ImagecacheTestCase
 {
@@ -67,9 +68,7 @@ class ImageTest extends ImagecacheTestCase
         ];
     }
 
-    /**
-     * @dataProvider providerScaleAndCrop
-     */
+    #[DataProvider('providerScaleAndCrop')]
     public function testScale_and_cropResize($originalImageSize, $resizeDestination, $scaled, $position)
     {
         $image = $this->getImage();

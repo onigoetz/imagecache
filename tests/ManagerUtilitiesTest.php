@@ -2,6 +2,7 @@
 
 use Onigoetz\Imagecache\Manager;
 use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ManagerUtilitiesTest extends ImagecacheTestCase
 {
@@ -39,9 +40,7 @@ class ManagerUtilitiesTest extends ImagecacheTestCase
         ];
     }
 
-    /**
-     * @dataProvider providerPercent
-     */
+    #[DataProvider('providerPercent')]
     public function testPercent($result, $percent, $current_value)
     {
         $manager = $this->getManager();
@@ -61,9 +60,7 @@ class ManagerUtilitiesTest extends ImagecacheTestCase
         ];
     }
 
-    /**
-     * @dataProvider providerKeywords
-     */
+    #[DataProvider('providerKeywords')]
     public function testKeywords($result, $value, $current_pixels, $new_pixels)
     {
         $manager = new Manager([]);

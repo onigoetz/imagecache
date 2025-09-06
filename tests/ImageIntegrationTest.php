@@ -7,6 +7,7 @@ use Image\PerceptualHash\Algorithm\PerceptionHash;
 use Onigoetz\Imagecache\Image;
 use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ImageIntegrationTest extends ImagecacheTestCase
 {
@@ -105,9 +106,7 @@ class ImageIntegrationTest extends ImagecacheTestCase
         ];
     }
 
-    /**
-     * @dataProvider providerImageGenerator
-     */
+    #[DataProvider('providerImageGenerator')]
     public function testGenerateImage($preset, $generated, $requires = null)
     {
         if ($requires && version_compare(PHP_VERSION, $requires, '<')) {
@@ -140,15 +139,12 @@ class ImageIntegrationTest extends ImagecacheTestCase
             [
                 [
                     ['action' => 'scale'],
-                ],
-                'You should at least provide width or height',
+                ]
             ],
         ];
     }
 
-    /**
-     * @dataProvider providerFailedImageGenerator
-     */
+    #[DataProvider('providerFailedImageGenerator')]
     public function testFailGenerateImage($preset)
     {
         $this->expectException(\LogicException::class);

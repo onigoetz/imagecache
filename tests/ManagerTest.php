@@ -6,6 +6,7 @@ use Onigoetz\Imagecache\Image;
 use Onigoetz\Imagecache\MethodCaller;
 use Onigoetz\ImagecacheUtils\ImagecacheTestCase;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ManagerTest extends ImagecacheTestCase
 {
@@ -118,9 +119,7 @@ class ManagerTest extends ImagecacheTestCase
         ];
     }
 
-    /**
-     * @dataProvider providerRetinaGenerator
-     */
+    #[DataProvider('providerRetinaGenerator')]
     public function testGenerateRetinaAction($original, $generated)
     {
         $manager = $this->getManager();
@@ -319,9 +318,9 @@ class ManagerTest extends ImagecacheTestCase
     }
 
     /**
-     * @dataProvider providerBuildImage
      * @covers       Onigoetz\Imagecache\Manager::buildImage
      */
+    #[DataProvider('providerBuildImage')]
     public function testBuildImageCalculation($entry, $calculated)
     {
         $manager = $this->getManager();
@@ -350,9 +349,9 @@ class ManagerTest extends ImagecacheTestCase
 
 
     /**
-     * @dataProvider providerIsRetina
      * @covers       Onigoetz\Imagecache\Manager::isRetina
      */
+    #[DataProvider('providerIsRetina')]
     public function testIsRetina($expected, $file)
     {
         $this->assertEquals($expected, $this->getManager()->isRetina($file));
@@ -372,9 +371,9 @@ class ManagerTest extends ImagecacheTestCase
     }
 
     /**
-     * @dataProvider providerGetOriginalFilename
      * @covers       Onigoetz\Imagecache\Manager::getOriginalFilename
      */
+    #[DataProvider('providerGetOriginalFilename')]
     public function testgetOriginalFilename($expected, $file)
     {
         $this->assertEquals($expected, $this->getManager()->getOriginalFilename($file));
