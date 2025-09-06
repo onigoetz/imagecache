@@ -20,7 +20,8 @@
     "mikey179/vfsstream": "^1.6.1",
     "slim/slim": "^4",
     "orchestra/testbench": "^6 || ^7 || ^8 || ^9",
-    "travail/image-perceptualhash": "^0.1.0"
+    "travail/image-perceptualhash": "^0.1.0",
+    "php-di/slim-bridge": "^3.4"
   },
   "autoload": {
     "psr-4": {
