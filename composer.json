@@ -36,7 +36,9 @@
     }
   },
   "scripts": {
-    "test": "phpunit"
+    "test": "phpunit",
+    "test:coverage": "phpunit --coverage-clover=coverage.xml --log-junit=test-report.xml",
+    "test:coverage-html": "phpunit --coverage-html=build/coverage"
   },
   "config": {
     "allow-plugins": {
