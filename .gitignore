@@ -4,3 +4,5 @@ ocular.phar
 vendor/
 build/*
 .phpunit.result.cache
+coverage.xml
+test-report.xml
