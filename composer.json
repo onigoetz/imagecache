@@ -1,7 +1,7 @@
 {
   "name": "onigoetz/imagecache",
   "description": "Image manipulation & caching for everybody",
-  "keywords": ["laravel", "laravel 4", "laravel 5", "slim", "image", "automatic generation", "retina" ],
+  "keywords": ["laravel", "slim", "image", "automatic generation", "retina" ],
   "license": "MIT",
   "authors": [
     {
@@ -10,16 +10,16 @@
     }
   ],
   "require": {
-    "php": ">=8.0",
+    "php": ">=8.1",
     "guzzlehttp/psr7": "^2.7",
     "intervention/image": "^3.3"
   },
   "require-dev": {
-    "phpunit/phpunit": "^10 || ^11 || ^12",
+    "phpunit/phpunit": "^11 || ^12 || ^13",
     "mockery/mockery": "^1.6.2",
     "mikey179/vfsstream": "^1.6.1",
     "slim/slim": "^4",
-    "orchestra/testbench": "^6 || ^7 || ^8 || ^9 || ^10",
+    "orchestra/testbench": "^10 || ^11",
     "travail/image-perceptualhash": "^0.1.0",
     "php-di/slim-bridge": "^3.4"
   },
@@ -43,6 +43,13 @@
   "config": {
     "allow-plugins": {
       "kylekatarnls/update-helper": true
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Onigoetz\\Imagecache\\Support\\Laravel\\ImagecacheServiceProvider"
+      ]
     }
   }
 }
