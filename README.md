@@ -32,16 +32,25 @@ An url to a cached image is built as follows :
 Image files can be in sub-folders, for example  `images/avatars/me.jpg` will have this url with a `40x40` preset : `images/cache/40x40/avatars/me.jpg`
 
 ## Prerequisites
+
 For it to work you need
 
-- PHP 5.5
+- One of the supported PHP versions below
 - Clean urls with apache url_rewrite or nginx rewrites
+
+### Supported versions
+
+|         | Supported                                |
+|---------|------------------------------------------|
+| PHP     | 8.1+ (8.2+ to run the test suite)        |
+| Laravel | 12.x, 13.x                               |
+| Slim    | 4.x                                      |
 
 ## Installation
 
-- [Laravel 5](http://github.com/onigoetz/imagecache/tree/master/docs/laravel5.md)
-- [Slim Framework 3](http://github.com/onigoetz/imagecache/tree/master/docs/slim3.md)
-- [Raw PHP](http://github.com/onigoetz/imagecache/tree/master/docs/raw.md)
+- [Laravel](docs/laravel.md)
+- [Slim Framework](docs/slim.md)
+- [Raw PHP](docs/raw.md)
 
 ## Preset configuration
 
@@ -74,7 +83,7 @@ __Action structure__
 ['action' => 'action_name', ... options ...]
 ```
 
-[Complete list of actions and options](http://github.com/onigoetz/imagecache/tree/master/docs/actions.md)
+[Complete list of actions and options](docs/actions.md)
 
 ### Example
 

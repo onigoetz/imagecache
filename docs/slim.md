@@ -1,4 +1,6 @@
-# Imagecache with Slim Framework Version 3
+# Imagecache with Slim Framework
+
+Supports Slim 4.
 
 ## Composer
 
