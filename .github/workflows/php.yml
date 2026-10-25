@@ -3,8 +3,11 @@ name: PHP
 on:
   push:
     branches: [ master ]
-  pull_request_target:
+  pull_request:
     branches: [ master ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -22,7 +25,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
       with:
-        ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+        persist-credentials: false
       
     - name: Setup PHP Action
       uses: shivammathur/setup-php@2.40.0
@@ -71,7 +74,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
       with:
-        ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+        persist-credentials: false
       
     - name: Setup PHP Action
       uses: shivammathur/setup-php@2.40.0
