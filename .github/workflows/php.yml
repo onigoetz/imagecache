@@ -23,12 +23,12 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       with:
         persist-credentials: false
       
     - name: Setup PHP Action
-      uses: shivammathur/setup-php@2.40.0
+      uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
       with:
         php-version: ${{ matrix.php-version }}
         coverage: pcov
@@ -42,7 +42,7 @@ jobs:
     - name: Run test suite
       run: composer run-script test:coverage
 
-    - uses: actions/upload-artifact@v6
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       if: matrix.php-version == '8.4'
       with:
         name: reports-${{ matrix.os }}-${{ matrix.php-version }}
@@ -72,12 +72,12 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       with:
         persist-credentials: false
       
     - name: Setup PHP Action
-      uses: shivammathur/setup-php@2.40.0
+      uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
       with:
         php-version: ${{ matrix.php }}
 
